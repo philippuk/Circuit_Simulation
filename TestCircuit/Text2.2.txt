@@ -1,0 +1,6 @@
+V1 N001 0 
+R1 N001 N002 10k
+C1 N002 0 1n
+L1 N002 0 1m
+.tran 0 100ms 0 1us
+.end
