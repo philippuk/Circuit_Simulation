@@ -10,14 +10,13 @@ class Resistor:public Component
 {
 protected:
     double resistance;
-    Node node_head;
-    Node node_tail;
 public:
-    Resistor(double res,Node node1, Node node2)
+    Resistor(string name, double res,Node node1, Node node2)
     {
+        com_name=name;
         resistance=res;
-        node_head=node1;
-        node_tail=node2;
+        node_pos=node1;
+        node_neg=node2;
     }
 
     double conductance(){

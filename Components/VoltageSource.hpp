@@ -14,16 +14,15 @@ protected:
     double Amplitude;
     double Frequency;
     double Offset;
-    Node node_positive;
-    Node node_negative;
 public:
-    VoltageSource(double a, double o, double f, Node node1, Node node2)
+    VoltageSource(string name, double a, double f, double o, Node node1, Node node2)
     {
-        Amplitude=A;
+        com_name=name;
+        Amplitude=a;
         Frequency=f;
         Offset=o;
-        node_positive=node1;
-        node_negative=node2;
+        node_pos=node1;
+        node_neg=node2;
     }
     
     //calculate the value of voltage source

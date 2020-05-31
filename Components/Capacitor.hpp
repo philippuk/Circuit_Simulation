@@ -12,16 +12,15 @@ class Capacitor:public Component
 {
 protected:
     double capacitance;
-    Node node_head;
-    Node node_tail;
     double voltage_history;
     vector<double> current_history;
 public:
-    Capacitor(double cap, Node node1, Node node2)
+    Capacitor(string name,double cap, Node node1, Node node2)
     {
+        com_name=name;
         capacitance=cap;
-        node_head=node1;
-        node_tail=node2;
+        node_pos=node1;
+        node_neg=node2;
         current_history.push_back(0);
     }
 
@@ -43,12 +42,12 @@ public:
     }
     
     //input current history
-    void current_input(double current){
-        current_history.push_back(current);
+    void current_input(){
+        current_history.push_back(current());
     }
     
     //input voltage history
-    void voltage_input(double voltage){
+    void voltage_input(){
         voltage_history=voltage();
     }
     

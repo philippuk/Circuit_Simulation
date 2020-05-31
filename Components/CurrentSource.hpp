@@ -14,16 +14,15 @@ protected:
     double Amplitude;
     double Frequency;
     double Offset;
-    Node node_in;
-    Node node_out;
 public:
-    CurrentSource(double a, double o, double f, Node node1, Node node2)
+    CurrentSource(string name,double a, double f, double o, Node node1, Node node2)
     {
-        Amplitude=A;
+        com_name=name;
+        Amplitude=a;
         Frequency=f;
         Offset=o;
-        node_in=node1;
-        node_out=node2;
+        node_pos=node1;
+        node_neg=node2;
     }
     
     //calculate the value of current source

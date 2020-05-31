@@ -12,15 +12,14 @@ class Inductor: public Component
 {
 protected:
     double inductance;
-    Node node_head;
-    Node node_tail;
     vector<double> voltage_history;
 public:
-    Inductor(double ind, Node node1, Node node2)
+    Inductor(string name,double ind, Node node1, Node node2)
     {
+        com_name=name;
         inductance=ind;
-        node_head=node1;
-        node_tail=node2;
+        node_pos=node1;
+        node_neg=node2;
         voltage_history.push_back(0);
     }
     
