@@ -1,7 +1,7 @@
 #ifndef Resistor_hpp
 #define Resistor_hpp
 
-#inlcude "Component.hpp"
+#include "Component.hpp"
 #include "Node.hpp"
 
 using namespace std;
