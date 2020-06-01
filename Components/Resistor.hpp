@@ -2,7 +2,6 @@
 #define Resistor_hpp
 
 #include "Component.hpp"
-#include "Node.hpp"
 
 using namespace std;
 
@@ -25,8 +24,8 @@ public:
     
     //How to define +ve or -ve
     double current(){
-        return (node_head.voltage - node_tail.voltage)/resistance;
+        return (node_pos.voltage - node_neg.voltage)/resistance;
     }
-}
+};
 
 #endif

@@ -2,6 +2,9 @@
 #define Component_hpp
 
 #include <string>
+#include "../Node.hpp"
+
+using namespace std;
 
 class Component
 {
@@ -39,6 +42,6 @@ public:
     string name(){
         return com_name;
     }
-}
+};
 
 #endif /* Component_hpp */

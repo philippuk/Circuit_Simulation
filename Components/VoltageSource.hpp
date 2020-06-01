@@ -1,7 +1,6 @@
 #ifndef VoltageSource_hpp
 #define VoltageSource_hpp
 
-#include "Node.hpp"
 #include "Component.hpp"
 
 #include <cmath>
@@ -27,16 +26,11 @@ public:
     
     //calculate the value of voltage source
     double voltage(){
-        return Amplitude*sin(2*M_PI*Frequency*time)+Offset ;
+        return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
     }
     
-    double current(){
-        double sum
-        for (int i=0;i<node_positive.component.size();i++){
-            sum += node_positive.component[i].current;
-        }
-        return sum
-    }
-   
-
+    // double current(){
+        
+    // }
+};
 #endif /* VoltageSource_hpp */

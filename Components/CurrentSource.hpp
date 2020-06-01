@@ -1,7 +1,6 @@
 #ifndef CurrentSource_hpp
 #define CurrentSource_hpp
 
-#include "Node.hpp"
 #include "Component.hpp"
 
 #include <cmath>
@@ -27,7 +26,7 @@ public:
     
     //calculate the value of current source
     double current(){
-        return Amplitude*sin(2*M_PI*Frequency*time)+Offset ;
+        return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
     }
-    
+};
 #endif /* CurrentSource_hpp */

@@ -1,7 +1,6 @@
 #ifndef Inductor_hpp
 #define Inductor_hpp
 
-#include "Node.hpp"
 #include "Component.hpp"
 
 #include <vector>
@@ -30,7 +29,7 @@ public:
             return 0;
         }else{
             for(int i=0; i<voltage_history.size();i++){
-                sum += voltage_history[i]*timestep
+                sum += voltage_history[i]*timestep();
             }
             return sum/inductance;
         }
@@ -40,5 +39,5 @@ public:
     void voltage_input(double voltage){
         voltage_history.push_back(voltage);
     }
-    
+};
 #endif /* Inductor_hpp */

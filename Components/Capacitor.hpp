@@ -1,7 +1,6 @@
 #ifndef Capacitor_hpp
 #define Capacitor_hpp
 
-#include "Node.hpp"
 #include "Component.hpp"
 
 #include <vector>
@@ -25,7 +24,7 @@ public:
     }
 
     double current(){
-        return (voltage()-voltage_history)/timestep*capacitance;
+        return (voltage()-voltage_history)/timestep()*capacitance;
     }
    
     //calculate the value of voltage source at particular instant
@@ -35,7 +34,7 @@ public:
             return 0;
         }else{
             for(int i=0; i<current_history.size();i++){
-                sum += current_history[i]*timestep
+                sum += current_history[i]*timestep();
             }
             return sum/capacitance;
         }
@@ -50,7 +49,6 @@ public:
     void voltage_input(){
         voltage_history=voltage();
     }
-    
-}
+};
 
 #endif /* Capacitor_hpp */
