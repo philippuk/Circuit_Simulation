@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cmath>
 //#include "Component.hpp"
 //#include "Node.hpp"
 //#include "Resistor.hpp"
@@ -10,7 +11,7 @@ using namespace std;
 
 int main()
 {
-
+   
     string s;
     ifstream infile("Test1.1.txt");   
 
@@ -32,6 +33,7 @@ int main()
 
 
 
+
     while (getline(infile, s)){
        if(s[0]=='R'){
            
@@ -47,13 +49,43 @@ int main()
 
                rnodepos2 = 0;
                Rnode2.push_back(rnodepos2);
-               vr.push_back(stod(s.substr(rpos2+2)));
+               double rnum = stod(s.substr(rpos2+2));
+               
+               if(s[s.size()-1]=='k'){
+
+                   vr.push_back(rnum*pow(10,3));
+
+               }else if(s[s.size()-1]=='M'){
+
+                   vr.push_back(rnum*pow(10,6));
+
+               }else if(s[s.size()-1]=='G'){
+
+                   vr.push_back(rnum*pow(10,9));
+
+               };
+               
 
            }else if(s[rpos2]=='N'){
                
                rnodepos2 = stoi(s.substr(rpos2+1,3));
                Rnode2.push_back(rnodepos2);
-               vr.push_back(stod(s.substr(rpos2+5)));
+               
+               double rnum = stod(s.substr(rpos2+5));
+               
+               if(s[s.size()-1]=='k'){
+
+                   vr.push_back(rnum*pow(10,3));
+
+               }else if(s[s.size()-1]=='M'){
+
+                   vr.push_back(rnum*pow(10,6));
+
+               }else if(s[s.size()-1]=='G'){
+
+                   vr.push_back(rnum*pow(10,9));
+
+               };
 
            }  
            
@@ -123,15 +155,53 @@ int main()
 
                cnodepos2 = 0;
                Cnode2.push_back(cnodepos2);
-               vc.push_back(stod(s.substr(cpos2+2)));
+               
+               double cnum = stod(s.substr(cpos2+2));
+               
+               if(s[s.size()-1]=='p'){
+
+                   vc.push_back(cnum*pow(10,-12));
+
+               }else if(s[s.size()-1]=='n'){
+
+                   vc.push_back(cnum*pow(10,-9));
+
+               }else if(s[s.size()-1]=='u'){
+
+                   vc.push_back(cnum*pow(10,-6));
+
+               }else if(s[s.size()-1]=='m'){
+
+                   vc.push_back(cnum*pow(10,-3));
+
+               };
 
            }else if(s[cpos2]=='N'){
                
                cnodepos2 = stoi(s.substr(cpos2+1,3));
                Cnode2.push_back(cnodepos2);
-               vc.push_back(stod(s.substr(cpos2+5)));
+               
+               double cnum = stod(s.substr(cpos2+5));
+               
+               if(s[s.size()-1]=='p'){
 
-           }  
+                   vc.push_back(cnum*pow(10,-12));
+
+               }else if(s[s.size()-1]=='n'){
+
+                   vc.push_back(cnum*pow(10,-9));
+
+               }else if(s[s.size()-1]=='u'){
+
+                   vc.push_back(cnum*pow(10,-6));
+
+               }else if(s[s.size()-1]=='m'){
+
+                   vc.push_back(cnum*pow(10,-3));
+
+               }
+
+           };  
        }else if(s[0]=='L'){
 
            size_t lpos = s.find('N');
@@ -146,21 +216,61 @@ int main()
 
                lnodepos2 = 0;
                Lnode2.push_back(lnodepos2);
-               vl.push_back(stod(s.substr(lpos2+2)));
+               
+               double lnum = stod(s.substr(lpos2+2));
+
+               if(s[s.size()-1]=='p'){
+
+                   vl.push_back(lnum*pow(10,-12));
+
+               }else if(s[s.size()-1]=='n'){
+
+                   vl.push_back(lnum*pow(10,-9));
+
+               }else if(s[s.size()-1]=='u'){
+
+                   vl.push_back(lnum*pow(10,-6));
+
+               }else if(s[s.size()-1]=='m'){
+
+                   vl.push_back(lnum*pow(10,-3));
+
+               };
+
+           
 
            }else if(s[lpos2]=='N'){
                
                lnodepos2 = stoi(s.substr(lpos2+1,3));
                Lnode2.push_back(lnodepos2);
                vl.push_back(stod(s.substr(lpos2+5)));
+               double lnum = stod(s.substr(lpos2+5));
+
+               if(s[s.size()-1]=='p'){
+
+                   vl.push_back(lnum*pow(10,-12));
+
+               }else if(s[s.size()-1]=='n'){
+
+                   vl.push_back(lnum*pow(10,-9));
+
+               }else if(s[s.size()-1]=='u'){
+
+                   vl.push_back(lnum*pow(10,-6));
+
+               }else if(s[s.size()-1]=='m'){
+
+                   vl.push_back(lnum*pow(10,-3));
+
+               }
 
            }  
        }
 
-
+       
     }
-
-
+    
+    
     infile.close();
 }
 
