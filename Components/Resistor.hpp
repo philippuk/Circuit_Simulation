@@ -18,13 +18,17 @@ public:
         node_neg=node2;
     }
 
-    double conductance(){
+    double conductance() override{
         return 1/resistance;
     }
     
     //How to define +ve or -ve
     double current(){
         return (node_pos.voltage - node_neg.voltage)/resistance;
+    }
+
+    double voltage(){
+        return 0;
     }
 };
 

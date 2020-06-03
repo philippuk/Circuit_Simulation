@@ -25,12 +25,12 @@ public:
     }
     
     //calculate the value of voltage source
-    double voltage(){
+    double voltage() override{
         return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
     }
     
-    // double current(){
-        
-    // }
+    double current(){
+        return 0;
+    }
 };
 #endif /* VoltageSource_hpp */

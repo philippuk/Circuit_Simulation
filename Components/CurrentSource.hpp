@@ -20,13 +20,17 @@ public:
         Amplitude=a;
         Frequency=f;
         Offset=o;
-        node_pos=node1;
-        node_neg=node2;
+        node_pos=node2;
+        node_neg=node1;
     }
     
     //calculate the value of current source
-    double current(){
-        return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
+    double current() override{
+        return Amplitude*sin(2*M_PI*Frequency*time())+Offset;
+    }
+
+    double voltage(){
+        return 0;
     }
 };
 #endif /* CurrentSource_hpp */

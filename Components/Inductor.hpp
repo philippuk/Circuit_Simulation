@@ -34,6 +34,10 @@ public:
             return sum/inductance;
         }
     }
+
+    double voltage(){
+        return 0;
+    }
     
     //input voltage history
     void voltage_input(double voltage){

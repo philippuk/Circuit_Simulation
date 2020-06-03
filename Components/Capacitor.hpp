@@ -28,7 +28,7 @@ public:
     }
    
     //calculate the value of voltage source at particular instant
-    double voltage(){
+    double voltage() override{
         double sum;
         if (current_history.size()==1){
             return 0;

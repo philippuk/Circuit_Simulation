@@ -2,6 +2,7 @@
 #define Component_hpp
 
 #include <string>
+#include <iostream>
 #include "../Node.hpp"
 
 using namespace std;
@@ -30,6 +31,14 @@ public:
             com_time -= com_timestep;
         }
     }
+
+    Node node_positive(){
+        return node_pos;
+    }
+
+    Node node_negative(){
+        return node_neg;
+    }
     
     double time(){
         return com_time;
@@ -42,6 +51,24 @@ public:
     string name(){
         return com_name;
     }
+
+    virtual double current()
+    {
+        cerr<<"Base case called"<<endl;
+        return 0;
+    };
+
+    virtual double voltage()
+    {
+        cerr<<"Base case called"<<endl;
+        return 0;
+    };
+
+    virtual double conductance()
+    {
+        cerr<<"Base case called"<<endl;
+        return 0;
+    };
 };
 
 #endif /* Component_hpp */

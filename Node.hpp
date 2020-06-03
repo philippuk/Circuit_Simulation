@@ -1,9 +1,10 @@
 #ifndef Node_hpp
 #define Node_hpp
 
+#include <vector>
 
 struct Node{
-    int Node_name;
+    int name;
     double voltage;
 };
 
