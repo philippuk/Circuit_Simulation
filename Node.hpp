@@ -2,9 +2,12 @@
 #define Node_hpp
 
 #include <vector>
+#include <string>
+
+using namespace std;
 
 struct Node{
-    int name;
+    string name;
     double voltage;
 };
 

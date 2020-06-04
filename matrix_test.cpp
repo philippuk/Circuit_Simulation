@@ -19,10 +19,10 @@ double stoptime=10e-3;
 double timestep=1e-6;
 bool change=false;
 
-Node N000={0,0};
-Node N001={1,0};
-Node N002={2,0};
-Node N003={3,0};
+Node N000={"N000",0};
+Node N001={"N001",0};
+Node N002={"N002",0};
+Node N003={"N003",0};
 
 VoltageSource VS("V1",0,0,1,N001,N000);
 CurrentSource CS("I1",0,0,2e-3,N002,N003); 
@@ -82,7 +82,7 @@ vector<double> v_conductance_input(Node node,bool overtake){
     if(overtake){
         for(int h=0;h<v_of_nodes.size();h++){
             res.push_back(0);
-            res[node.name-1]=1;
+            res[stoi(node.name.substr(1,3))-1]=1;
         }
         return res;
     }else{
