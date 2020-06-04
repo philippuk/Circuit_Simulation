@@ -14,7 +14,7 @@ protected:
     double voltage_history;
     vector<double> current_history;
 public:
-    Capacitor(string name,double cap, Node node1, Node node2)
+    Capacitor(string name,double cap, Node* node1, Node* node2)
     {
         com_name=name;
         capacitance=cap;

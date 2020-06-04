@@ -13,7 +13,7 @@ protected:
     double inductance;
     vector<double> voltage_history;
 public:
-    Inductor(string name,double ind, Node node1, Node node2)
+    Inductor(string name,double ind, Node* node1, Node* node2)
     {
         com_name=name;
         inductance=ind;

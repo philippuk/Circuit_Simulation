@@ -1,7 +1,6 @@
 #ifndef Node_hpp
 #define Node_hpp
 
-#include <vector>
 #include <string>
 
 using namespace std;

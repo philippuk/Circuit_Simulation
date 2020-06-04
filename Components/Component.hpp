@@ -13,8 +13,8 @@ protected:
     double com_time=0;
     double com_timestep;
     string com_name;
-    Node node_pos;
-    Node node_neg;
+    Node* node_pos;
+    Node* node_neg;
 public:
     void set_time(double time){
         com_time=time;
@@ -32,11 +32,11 @@ public:
         }
     }
 
-    Node node_positive(){
+    Node* node_positive(){
         return node_pos;
     }
 
-    Node node_negative(){
+    Node* node_negative(){
         return node_neg;
     }
     

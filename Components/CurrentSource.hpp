@@ -14,7 +14,7 @@ protected:
     double Frequency;
     double Offset;
 public:
-    CurrentSource(string name,double a, double f, double o, Node node1, Node node2)
+    CurrentSource(string name,double a, double f, double o, Node* node1, Node* node2)
     {
         com_name=name;
         Amplitude=a;
