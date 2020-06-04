@@ -11,7 +11,6 @@
 #include "Components/Capacitor.hpp"
 #include "Components/Component.hpp"
 
- 
 using namespace std;
 using namespace Eigen;
 
@@ -58,7 +57,7 @@ double v_current(Node node){
 
 //calculate the value for the conductance matrix
 double v_conductance(Node node1, Node node2){
-    double sum;
+    double sum=0;
     if(node1.name==node2.name){
         for(int j=0;j<component_list.size();j++){
             if(component_list[j]->name()[0]=='R' && (component_list[j]->node_positive().name==node1.name||component_list[j]->node_negative().name==node1.name)){
@@ -100,29 +99,34 @@ vector<double> v_conductance_input(Node node,bool overtake){
  
 int main()
 {
-    VS.set_timestep(timestep);
-    CS.set_timestep(timestep);
-    R1.set_timestep(timestep);
-    R2.set_timestep(timestep);
-    R3.set_timestep(timestep);
-    //calculation part
+    for (int i=0;i<component_list.size();i++){
+        component_list[i]->set_timestep(timestep);
+    }
+
     for (int i=0;timestep*i<=1e-6;i++){
-        Matrix<double, 3, 3> m_conductance;
-        Matrix<double, 3, 1> m_current;
-        m_conductance << 1,0,0, -R1.conductance(),R1.conductance()+R3.conductance(),0,0,0,R2.conductance();
+        //initialize three matrix
+        MatrixXd  m_conductance(v_of_nodes.size(), v_of_nodes.size());
+        VectorXd m_current(v_of_nodes.size());
+        VectorXd m_voltage(v_of_nodes.size());
+
+        //calculation for the three matrix
         for (int k=0;k<v_of_nodes.size();k++){
             m_current(k)=v_current(v_of_nodes[k]);
-            // vector<double> tmp=v_conductance_input(v_of_nodes[k],change);
-            // for (int l=0;l<tmp.size();l++){
-            //     m_conductance(k,l)=tmp[l];
-            // }
-            // change=false;
+            vector<double> tmp=v_conductance_input(v_of_nodes[k],change);
+            for (int l=0;l<tmp.size();l++){
+                m_conductance(k,l)=tmp[l];
+            }
+            change=false;
         }
-        cout << "Here is the conductance matrix:\n" << m_conductance << endl;
-        cout << "Here is the current vector:\n" << m_current << endl;
-        Matrix<double,3,1> m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
-        cout << "The voltage vector is:\n" << m_voltage << endl;
-        component_list[i]->change_time(true);
+        cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
+        cerr << "Here is the current vector:\n" << m_current << endl;
+        m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
+        cerr << "The voltage vector is:\n" << m_voltage << endl;
+
+        //progress to the next time interval
+        for (int k=0;k<component_list.size();k++){
+            component_list[k]->change_time(true); 
+        }
     }
 }
 

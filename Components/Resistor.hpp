@@ -10,7 +10,7 @@ class Resistor:public Component
 protected:
     double resistance;
 public:
-    Resistor(string name, double res,Node node1, Node node2)
+    Resistor(string name, double res, Node node1, Node node2)
     {
         com_name=name;
         resistance=res;
