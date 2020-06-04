@@ -29,8 +29,23 @@ public:
         return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
     }
     
-    double current(){
-        return 0;
+    double source_current(vector<Component *> list) override {
+        double sum;
+        for(int a=0;a<list.size();a++){
+            if(list[a]->name()[0]=='V' && list[a]->node_positive()->name==node_pos->name){
+                //todo
+                continue;
+            }else if(list[a]->name()[0]=='V' && list[a]->node_negative()->name==node_pos->name){
+                sum = list[a]->source_current(list);
+            }else if(list[a]->name()[0]=='I' && list[a]->node_positive()->name==node_pos->name){
+                sum -= list[a]->current();
+            }else if(list[a]->name()[0]=='I' && list[a]->node_negative()->name==node_pos->name){
+                sum += list[a]->current();
+            }else if(list[a]->node_negative()->name==node_pos->name||list[a]->node_positive()->name==node_pos->name){
+                sum += list[a]->current();
+            }
+        }
+        return sum;
     }
 };
 #endif /* VoltageSource_hpp */

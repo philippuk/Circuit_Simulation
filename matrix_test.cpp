@@ -113,7 +113,7 @@ int main()
     }
     cout<<endl;
 
-    for (int i=0;timestep*i<=stoptime;i++){
+    for (int i=0;timestep*i<=1e-6;i++){
         cout<<i*timestep;
         //initialize three matrix
         MatrixXd  m_conductance(v_of_nodes.size(), v_of_nodes.size());
@@ -141,7 +141,12 @@ int main()
         }
 
         for (int k=0;k<component_list.size();k++){
-            cout<<","<<component_list[k]->current();
+            if(component_list[k]->name()[0]=='V'){
+                cout<<","<<component_list[k]->source_current(component_list);
+            }else{
+                cout<<","<<component_list[k]->current();
+            }
+            
         }
 
         cout<<endl;

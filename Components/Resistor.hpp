@@ -24,7 +24,7 @@ public:
     
     //How to define +ve or -ve
     double current(){
-        return (node_pos->voltage - node_neg->voltage)/resistance;
+        return (node_neg->voltage - node_pos->voltage)/resistance;
     }
 
     double voltage(){

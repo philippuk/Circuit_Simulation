@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 #include "../Node.hpp"
 
 using namespace std;
@@ -54,21 +55,27 @@ public:
 
     virtual double current()
     {
-        cerr<<"Base case called"<<endl;
+        cerr<<"Current Base case called"<<endl;
         return 0;
     };
 
     virtual double voltage()
     {
-        cerr<<"Base case called"<<endl;
+        cerr<<"Voltage Base case called"<<endl;
         return 0;
     };
 
     virtual double conductance()
     {
-        cerr<<"Base case called"<<endl;
+        cerr<<"Conductance Base case called"<<endl;
         return 0;
     };
+
+    virtual double source_current(vector<Component *> list)
+    {
+        cerr<<"Source Current Base case called"<<endl;
+        return 0;
+    }
 };
 
 #endif /* Component_hpp */
