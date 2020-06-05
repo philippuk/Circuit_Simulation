@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <set>
+#include <cassert>
 
 #include "Node.hpp"
 #include "Eigen/Dense"
@@ -17,7 +19,6 @@ using namespace Eigen;
 //input part
 double stoptime=10e-3;
 double timestep=1e-6;
-bool change=false;
 
 Node N000={"N000",0};
 Node N001={"N001",0};
@@ -33,17 +34,13 @@ Resistor R3("R3",10e3,&N002,&N000);
 vector<Node*> v_of_nodes={&N001,&N002,&N003};
 vector<Component*> component_list={&VS,&CS,&R1,&R2,&R3};
 
-//calculate the value for the current vector
+//current statement
+set<Node*> s_of_nodes={&N000,&N001,&N002,&N003};
+//voltage statement
+set<Component*> s_of_component;
+
+//calculate the value for the current vector(current statement)
 double v_current(Node* node){
-    for(int j=0;j<component_list.size();j++){
-        if(component_list[j]->name()[0]=='V' && component_list[j]->node_positive()->name==node->name){
-            change=true;
-            return component_list[j]->voltage();
-        }else if(component_list[j]->name()[0]=='V' && component_list[j]->node_negative()->name==node->name){
-            change=true;
-            return -component_list[j]->voltage();
-        }
-    }
     double sum;
     for(int j=0;j<component_list.size();j++){
         if(component_list[j]->name()[0]=='I' && component_list[j]->node_positive()->name==node->name){
@@ -55,7 +52,7 @@ double v_current(Node* node){
     return sum;
 }
 
-//calculate the value for the conductance matrix
+//calculate the value for the conductance matrix(current statement)
 double v_conductance(Node* node1, Node* node2){
     double sum=0;
     if(node1->name==node2->name){
@@ -76,15 +73,30 @@ double v_conductance(Node* node1, Node* node2){
     return sum;
 }
 
-//input the value for the conductance matrix
-vector<double> v_conductance_input(Node* node,bool overtake){
+//input the value for the conductance matrix(voltage statement)
+vector<double> v_conductance_input(Component* VS){
     vector<double> res;
-    if(overtake){
-        for(int h=0;h<v_of_nodes.size();h++){
+    for(int h=0;h<v_of_nodes.size();h++){
             res.push_back(0);
-            res[stoi(node->name.substr(1,3))-1]=1;
         }
-        return res;
+    if(VS->node_positive()->name=="N000"){
+        res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
+    }else if(VS->node_negative()->name=="N000"){
+        res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
+    }else{
+        res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
+        res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
+    }
+    return res;
+}
+
+//input the value for the conductance matrix(current statement)
+vector<double> v_conductance_input(Node* node){
+    vector<double> res;
+    if(node->name=="N000"){
+        for(int h=0;h<v_of_nodes.size();h++){
+            res.push_back(v_conductance(v_of_nodes[h],node));
+        }
     }else{
         for(int h=0;h<v_of_nodes.size();h++){
             if (v_of_nodes[h]->name==node->name){
@@ -93,12 +105,13 @@ vector<double> v_conductance_input(Node* node,bool overtake){
                 res.push_back(-v_conductance(v_of_nodes[h],node));
             }
         }
-        return res;
     }
+    return res;
 }
  
 int main()
 {
+    //set timestep for component
     for (int i=0;i<component_list.size();i++){
         component_list[i]->set_timestep(timestep);
     }
@@ -113,6 +126,15 @@ int main()
     }
     cout<<endl;
 
+    //determine the value of s_of_nodes and s_of_component
+    for(int j=0;j<component_list.size();j++){
+        if(component_list[j]->name()[0]=='V'){
+            s_of_component.insert(component_list[j]);
+            s_of_nodes.erase(component_list[j]->node_positive());
+            s_of_nodes.erase(component_list[j]->node_negative());
+        }
+    }
+
     for (int i=0;timestep*i<=1e-6;i++){
         cout<<i*timestep;
         //initialize three matrix
@@ -120,15 +142,34 @@ int main()
         VectorXd m_current(v_of_nodes.size());
         VectorXd m_voltage(v_of_nodes.size());
 
-        //calculation for the three matrix
-        for (int k=0;k<v_of_nodes.size();k++){
-            m_current(k)=v_current(v_of_nodes[k]);
-            vector<double> tmp=v_conductance_input(v_of_nodes[k],change);
+        //value to input row by row
+        int row=0;
+
+        //input voltage statement
+        set<Component*>::iterator it;
+        for (it = s_of_component.begin(); it != s_of_component.end(); ++it) {
+            assert(row<=v_of_nodes.size());
+            m_current(row)=(*it)->voltage();
+            vector<double>tmp=v_conductance_input(*it);
             for (int l=0;l<tmp.size();l++){
-                m_conductance(k,l)=tmp[l];
+                m_conductance(row,l)=tmp[l];
             }
-            change=false;
+            row++;
         }
+
+        set<Node*>::iterator n_it;
+        //input current statement
+        for (n_it = s_of_nodes.begin(); n_it != s_of_nodes.end(); ++n_it) {
+            assert(row<=v_of_nodes.size());
+            m_current(row)=v_current(*n_it);
+            vector<double>tmp=v_conductance_input(*n_it);
+            for (int l=0;l<tmp.size();l++){
+                m_conductance(row,l)=tmp[l];
+            }
+            row++;
+        }
+
+        //calculation for the voltage matrix
         cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
         cerr << "Here is the current vector:\n" << m_current << endl;
         m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);

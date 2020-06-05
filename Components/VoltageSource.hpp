@@ -33,10 +33,13 @@ public:
         double sum;
         for(int a=0;a<list.size();a++){
             if(list[a]->name()[0]=='V' && list[a]->node_positive()->name==node_pos->name){
-                //todo
-                continue;
+                if(list[a]->name()==name()){
+                    continue;
+                }else{
+                    sum -= list[a]->source_current(list);
+                }
             }else if(list[a]->name()[0]=='V' && list[a]->node_negative()->name==node_pos->name){
-                sum = list[a]->source_current(list);
+                sum += list[a]->source_current(list);
             }else if(list[a]->name()[0]=='I' && list[a]->node_positive()->name==node_pos->name){
                 sum -= list[a]->current();
             }else if(list[a]->name()[0]=='I' && list[a]->node_negative()->name==node_pos->name){
