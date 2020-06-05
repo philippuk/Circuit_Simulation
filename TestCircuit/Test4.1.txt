@@ -1,0 +1,7 @@
+V1 N001 0 2V
+R1 N001 N002 10k
+V1 N002 N003 2V
+R2 N003 0 10k
+R3 N002 0 10k
+.tran 0 10ms 0 1us
+.end
