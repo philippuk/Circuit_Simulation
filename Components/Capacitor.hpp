@@ -20,7 +20,7 @@ public:
         capacitance=cap;
         node_pos=node1;
         node_neg=node2;
-        current_history.push_back(0);
+        voltage_history=0;
     }
 
     double current(){
@@ -28,9 +28,9 @@ public:
     }
    
     //calculate the value of voltage source at particular instant
-    double voltage() override{
+    double voltage(){
         double sum;
-        if (current_history.size()==1){
+        if (current_history.size()==0){
             return 0;
         }else{
             for(int i=0; i<current_history.size();i++){
@@ -39,15 +39,12 @@ public:
             return sum/capacitance;
         }
     }
-    
-    //input current history
-    void current_input(){
-        current_history.push_back(current());
-    }
-    
-    //input voltage history
-    void voltage_input(){
+
+    //override change_time to input voltage history and current history
+    void change_time(){
+        com_time += com_timestep;
         voltage_history=voltage();
+        current_history.push_back(current());
     }
 };
 

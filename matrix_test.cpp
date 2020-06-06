@@ -41,11 +41,12 @@ set<Component*> s_of_component;
 
 //calculate the value for the current vector(current statement)
 double v_current(Node* node){
-    double sum;
+    double sum=0;
     for(int j=0;j<component_list.size();j++){
-        if(component_list[j]->name()[0]=='I' && component_list[j]->node_positive()->name==node->name){
+        if((component_list[j]->name()[0]=='I'||component_list[j]->name()[0]=='L') && component_list[j]->node_positive()->name==node->name){
             sum += component_list[j]->current();
-        }else if(component_list[j]->name()[0]=='I' && component_list[j]->node_negative()->name==node->name){
+        }
+        if((component_list[j]->name()[0]=='I'||component_list[j]->name()[0]=='L') && component_list[j]->node_negative()->name==node->name){
             sum -= component_list[j]->current();
         }
     }
@@ -65,7 +66,8 @@ double v_conductance(Node* node1, Node* node2){
         for(int j=0;j<component_list.size();j++){
             if(component_list[j]->name()[0]=='R' && component_list[j]->node_positive()->name==node1->name && component_list[j]->node_negative()->name==node2->name){
                 sum += component_list[j]->conductance();
-            }else if (component_list[j]->name()[0]=='R' && component_list[j]->node_positive()->name==node2->name && component_list[j]->node_negative()->name==node1->name){
+            }
+            if (component_list[j]->name()[0]=='R' && component_list[j]->node_positive()->name==node2->name && component_list[j]->node_negative()->name==node1->name){
                 sum += component_list[j]->conductance();
             }
         }
@@ -128,7 +130,7 @@ int main()
 
     //determine the value of s_of_nodes and s_of_component
     for(int j=0;j<component_list.size();j++){
-        if(component_list[j]->name()[0]=='V'){
+        if(component_list[j]->name()[0]=='V'||component_list[j]->name()[0]=='C'){
             s_of_component.insert(component_list[j]);
             s_of_nodes.erase(component_list[j]->node_positive());
             s_of_nodes.erase(component_list[j]->node_negative());
@@ -194,7 +196,7 @@ int main()
 
         //progress to the next time interval
         for (int k=0;k<component_list.size();k++){
-            component_list[k]->change_time(true); 
+            component_list[k]->change_time(); 
         }
     }
 }

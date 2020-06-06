@@ -19,13 +19,12 @@ public:
         inductance=ind;
         node_pos=node1;
         node_neg=node2;
-        voltage_history.push_back(0);
     }
     
     //calculate the value of current source at particular instant
     double current(){
         double sum;
-        if (voltage_history.size()==1){
+        if (voltage_history.size()==0){
             return 0;
         }else{
             for(int i=0; i<voltage_history.size();i++){
@@ -35,13 +34,10 @@ public:
         }
     }
 
-    double voltage(){
-        return 0;
-    }
-    
-    //input voltage history
-    void voltage_input(double voltage){
-        voltage_history.push_back(voltage);
+    //override change_time to input voltage history
+    void change_time(){
+        com_time += com_timestep;
+        voltage_history.push_back(node_pos->voltage-node_neg->voltage);
     }
 };
 #endif /* Inductor_hpp */

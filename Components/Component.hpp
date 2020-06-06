@@ -25,14 +25,6 @@ public:
         com_timestep=timestep;
     }
     
-    void change_time(bool sign){
-        if (sign){
-            com_time += com_timestep;
-        }else{
-            com_time -= com_timestep;
-        }
-    }
-
     Node* node_positive(){
         return node_pos;
     }
@@ -51,6 +43,11 @@ public:
     
     string name(){
         return com_name;
+    }
+
+    virtual void change_time()
+    {
+        com_time += com_timestep;
     }
 
     virtual double current()
