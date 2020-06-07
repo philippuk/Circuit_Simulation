@@ -27,6 +27,27 @@ protected:
         }
         return false;
     }
+    double node_current(vector<Component *> list, Node* node){
+        double sum;
+        for(int a=0;a<list.size();a++){
+            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_positive()->name==node->name){
+                sum += node_current(list, list[a]->node_negative());
+            }
+            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_negative()->name==node->name){
+                sum += node_current(list, list[a]->node_positive());
+            }
+            if((list[a]->name()[0]=='I'||list[a]->name()[0]=='L') && list[a]->node_positive()->name==node->name){
+                sum -= list[a]->current();
+            }
+            if((list[a]->name()[0]=='I'||list[a]->name()[0]=='L') && list[a]->node_negative()->name==node->name){
+                sum += list[a]->current();
+            }
+            if(list[a]->name()[0]=='R' && (list[a]->node_negative()->name==node->name||list[a]->node_positive()->name==node->name)){
+                sum += list[a]->current();
+            }
+        }
+        return sum;
+    }
 public:
     VoltageSource(string name, double a, double f, double o, Node* node1, Node* node2)
     {
@@ -45,15 +66,17 @@ public:
 
     double source_current(vector<Component *> list){
         assert(circuit_is_valid(list));
+        vector<Component*>pos_connect;
+        vector<Component*>neg_connect;
         double sum;
 
         //search positive node have voltage source connected
         for(int a=0;a<list.size();a++){
-            if(list[a]->name()[0]=='V' && (list[a]->node_positive()->name==node_pos->name||list[a]->node_negative()->name==node_pos->name)){
+            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && (list[a]->node_positive()->name==node_pos->name||list[a]->node_negative()->name==node_pos->name)){
                 if(list[a]->name()==com_name){
                     continue;
                 }else{
-                    break;
+                    pos_connect.push_back(list[a]);
                 }
             }
         }
@@ -64,23 +87,18 @@ public:
                 if(list[a]->name()==com_name){
                     continue;
                 }else{
-                    break;
+                    neg_connect.push_back(list[a]);
                 }
             }
         }
-            if(list[a]->name()[0]=='V' && list[a]->node_negative()->name==node_pos->name){
-                sum += list[a]->source_current(list);
-            }
-            if(list[a]->name()[0]=='I' && list[a]->node_positive()->name==node_pos->name){
-                sum -= list[a]->current();
-            }
-            if(list[a]->name()[0]=='I' && list[a]->node_negative()->name==node_pos->name){
-                sum += list[a]->current();
-            }
-            if(list[a]->node_negative()->name==node_pos->name||list[a]->node_positive()->name==node_pos->name){
-                sum += list[a]->current();
-            }
+
+        //use positive node for current calculation if there is less voltage source attached
+        if(pos_connect.size()>=neg_connect.size()){
+            sum=node_current(list, node_pos);
+        }else{
+            sum=node_current(list, node_neg);
         }
+
         return sum;
     }
 };
