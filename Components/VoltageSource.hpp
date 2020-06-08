@@ -18,8 +18,10 @@ protected:
     bool circuit_is_valid(vector<Component *> list){
         unordered_map<Node*, int> nodes;
         for (int b = 0; b < list.size(); b++){
-            nodes[list[b]->node_positive()]++;
-            nodes[list[b]->node_negative()]++;
+            if(list[b]->name()[0]=='V'||list[b]->name()[0]=='C'){
+                nodes[list[b]->node_positive()]++;
+                nodes[list[b]->node_negative()]++;
+            }
         }
         for (auto e : nodes){
             if (e.second == 1)
@@ -27,26 +29,26 @@ protected:
         }
         return false;
     }
-    double node_current(vector<Component *> list, Node* node){
-        double sum;
+    double node_current(vector<Component *> list, Node* node, Component* source){
+        double res;
         for(int a=0;a<list.size();a++){
-            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_positive()->name==node->name){
-                sum += node_current(list, list[a]->node_negative());
+            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_positive()->name==node->name && list[a]!=source){
+                res += node_current(list, list[a]->node_negative(),list[a]);
             }
-            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_negative()->name==node->name){
-                sum += node_current(list, list[a]->node_positive());
+            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_negative()->name==node->name && list[a]!=source){
+                res += node_current(list, list[a]->node_positive(),list[a]);
             }
             if((list[a]->name()[0]=='I'||list[a]->name()[0]=='L') && list[a]->node_positive()->name==node->name){
-                sum -= list[a]->current();
+                res -= list[a]->current();
             }
             if((list[a]->name()[0]=='I'||list[a]->name()[0]=='L') && list[a]->node_negative()->name==node->name){
-                sum += list[a]->current();
+                res += list[a]->current();
             }
             if(list[a]->name()[0]=='R' && (list[a]->node_negative()->name==node->name||list[a]->node_positive()->name==node->name)){
-                sum += list[a]->current();
+                res += list[a]->current();
             }
         }
-        return sum;
+        return res;
     }
 public:
     VoltageSource(string name, double a, double f, double o, Node* node1, Node* node2)
@@ -64,6 +66,7 @@ public:
         return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
     }
 
+    //calculate the value of current by iterative method
     double source_current(vector<Component *> list){
         assert(circuit_is_valid(list));
         vector<Component*>pos_connect;
@@ -94,9 +97,9 @@ public:
 
         //use positive node for current calculation if there is less voltage source attached
         if(pos_connect.size()>=neg_connect.size()){
-            sum=node_current(list, node_pos);
+            sum=node_current(list, node_pos,this);
         }else{
-            sum=node_current(list, node_neg);
+            sum=node_current(list, node_neg,this);
         }
 
         return sum;

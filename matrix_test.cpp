@@ -18,7 +18,7 @@ using namespace Eigen;
 
 //input part
 double stoptime=10e-3;
-double timestep=1e-6;
+double timestep=10e-6;
 
 Node N000={"N000",0};
 Node N001={"N001",0};
@@ -137,7 +137,7 @@ int main()
         }
     }
 
-    for (int i=0;timestep*i<=1e-6;i++){
+    for (int i=0;timestep*i<=stoptime;i++){
         cout<<i*timestep;
         //initialize three matrix
         MatrixXd  m_conductance(v_of_nodes.size(), v_of_nodes.size());
