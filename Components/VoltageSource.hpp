@@ -83,7 +83,7 @@ public:
 
         //search negative node have voltage source connected
         for(int a=0;a<list.size();a++){
-            if(list[a]->name()[0]=='V' && (list[a]->node_positive()->name==node_neg->name||list[a]->node_negative()->name==node_neg->name)){
+            if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && (list[a]->node_positive()->name==node_neg->name||list[a]->node_negative()->name==node_neg->name)){
                 if(list[a]->name()==com_name){
                     continue;
                 }else{
