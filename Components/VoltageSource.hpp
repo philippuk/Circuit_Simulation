@@ -96,7 +96,7 @@ public:
         }
 
         //use positive node for current calculation if there is less voltage source attached
-        if(pos_connect.size()>=neg_connect.size()){
+        if(pos_connect.size()<=neg_connect.size()){
             sum=node_current(list, node_pos,this);
         }else{
             sum=node_current(list, node_neg,this);

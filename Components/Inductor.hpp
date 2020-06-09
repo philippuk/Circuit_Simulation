@@ -37,6 +37,7 @@ public:
     //override change_time to input voltage history
     void change_time(){
         com_time += com_timestep;
+        cerr<<node_pos->voltage-node_neg->voltage<<endl;
         voltage_history.push_back(node_pos->voltage-node_neg->voltage);
     }
 };
