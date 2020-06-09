@@ -39,6 +39,10 @@ using namespace std;
 
             value = num*pow(10,-12);
 
+        }else{
+
+            value = num;
+            
         }
         return value;
     }
