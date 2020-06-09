@@ -66,33 +66,229 @@ int main()
 
         if(s[0]=='R'){
 
-            size_t rpos = s.find('N');
+            size_t pos = s.find('N');
 
-            size_t rpos2 = rpos+5;
+            size_t pos2 = pos+5;
 
-            if(s[rpos2]=='0'){
+            if(s[pos2]=='0'){
                
-               double rnum = stod(s.substr(rpos2+2));
+               double num = stod(s.substr(pos2+2));
                
-               double res = multiplier(rnum);
+               double res = multiplier(num);
                
-               component_list.push_back(new Resistor(s.substr(0,2), res, nodefinder(s.substr(rpos,4)), nodefinder(s.substr(rpos2,1))));
+               component_list.push_back(new Resistor(s.substr(0,2), res, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
 
 
 
-           }else if(s[rpos2]=='N'){
+           }else if(s[pos2]=='N'){
                
-               double rnum = stod(s.substr(rpos2+5));
+               double num = stod(s.substr(pos2+5));
 
-               double res = multiplier(rnum);
+               double res = multiplier(num);
 
-               component_list.push_back(new Resistor(s.substr(0,2), res, nodefinder(s.substr(rpos,4)), nodefinder(s.substr(rpos2,4))));
+               component_list.push_back(new Resistor(s.substr(0,2), res, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
 
                
                
 
                };
 
+           }else if(s[0]=='L'){
+
+            size_t pos = s.find('N');
+
+            size_t pos2 = pos+5;
+
+            if(s[pos2]=='0'){
+               
+               double num = stod(s.substr(pos2+2));
+               
+               double ind = multiplier(num);
+               
+               component_list.push_back(new Inductor(s.substr(0,2), ind, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
+
+
+
+           }else if(s[pos2]=='N'){
+               
+               double num = stod(s.substr(pos2+5));
+
+               double ind = multiplier(num);
+
+               component_list.push_back(new Inductor(s.substr(0,2), ind, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
+
+               
+               
+
+               };
+           }else if(s[0]=='C'){
+
+            size_t pos = s.find('N');
+
+            size_t pos2 = pos+5;
+
+            if(s[pos2]=='0'){
+               
+               double num = stod(s.substr(pos2+2));
+               
+               double cap = multiplier(num);
+               
+               component_list.push_back(new Capacitor(s.substr(0,2), cap, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
+
+
+
+           }else if(s[pos2]=='N'){
+               
+               double num = stod(s.substr(pos2+5));
+
+               double cap = multiplier(num);
+
+               component_list.push_back(new Capacitor(s.substr(0,2), cap, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
+
+               
+               
+
+               };
+           }else if(s[0]=='V'){
+
+            size_t pos = s.find('N');
+
+            size_t pos2 = pos+5;
+
+            if(s[pos2]=='0'){
+
+               if(s[pos2+2]=='S'){
+                   size_t datapos = s.find('(');
+                   string data = s.substr(datapos);
+                
+                       size_t blank = data.find(' ');
+                       int digit = blank - datapos;
+                       double a = multiplier(stod(data.substr(datapos+1,digit)));
+
+                       string oandf = data.substr(blank+1);
+                       size_t blank2 = oandf.find(' ');
+                       int digit2 = blank2 - (blank+1);
+                       double o = multiplier(stod(oandf.substr(blank+1,digit2)));
+
+                       size_t endpos = oandf.find(')');
+                       int digit3 = endpos - (blank2+1);
+                       double f = multiplier(stod(oandf.substr(blank2+1,digit3)));
+
+                       component_list.push_back(new VoltageSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
+                   
+               }else{
+
+                   double num = stod(s.substr(pos2+2));
+                   double o = multiplier(num);
+                   double a = 0;
+                   double f = 0;
+                   component_list.push_back(new VoltageSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
+
+               };
+
+           }else if(s[pos2]=='N'){
+               
+               if(s[pos2+5]=='S'){
+                   size_t datapos = s.find('(');
+                   string data = s.substr(datapos);
+                
+                       size_t blank = data.find(' ');
+                       int digit = blank - datapos;
+                       double a = multiplier(stod(data.substr(datapos+1,digit)));
+
+                       string oandf = data.substr(blank+1);
+                       size_t blank2 = oandf.find(' ');
+                       int digit2 = blank2 - (blank+1);
+                       double o = multiplier(stod(oandf.substr(blank+1,digit2)));
+
+                       size_t endpos = oandf.find(')');
+                       int digit3 = endpos - (blank2+1);
+                       double f = multiplier(stod(oandf.substr(blank2+1,digit3)));
+
+                       component_list.push_back(new VoltageSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
+                   
+               }else{
+
+                   double num = stod(s.substr(pos2+5));
+                   double o = multiplier(num);
+                   double a = 0;
+                   double f = 0;
+                   component_list.push_back(new VoltageSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
+
+                 }
+
+               };
+
+           }else if(s[0]=='I'){
+
+            size_t pos = s.find('N');
+
+            size_t pos2 = pos+5;
+
+            if(s[pos2]=='0'){
+
+               if(s[pos2+2]=='S'){
+                   size_t datapos = s.find('(');
+                   string data = s.substr(datapos);
+                
+                       size_t blank = data.find(' ');
+                       int digit = blank - datapos;
+                       double a = multiplier(stod(data.substr(datapos+1,digit)));
+
+                       string oandf = data.substr(blank+1);
+                       size_t blank2 = oandf.find(' ');
+                       int digit2 = blank2 - (blank+1);
+                       double o = multiplier(stod(oandf.substr(blank+1,digit2)));
+
+                       size_t endpos = oandf.find(')');
+                       int digit3 = endpos - (blank2+1);
+                       double f = multiplier(stod(oandf.substr(blank2+1,digit3)));
+
+                       component_list.push_back(new CurrentSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
+                   
+               }else{
+
+                   double num = stod(s.substr(pos2+2));
+                   double o = multiplier(num);
+                   double a = 0;
+                   double f = 0;
+                   component_list.push_back(new CurrentSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,1))));
+
+               };
+
+           }else if(s[pos2]=='N'){
+               
+               if(s[pos2+5]=='S'){
+                   size_t datapos = s.find('(');
+                   string data = s.substr(datapos);
+                
+                       size_t blank = data.find(' ');
+                       int digit = blank - datapos;
+                       double a = multiplier(stod(data.substr(datapos+1,digit)));
+
+                       string oandf = data.substr(blank+1);
+                       size_t blank2 = oandf.find(' ');
+                       int digit2 = blank2 - (blank+1);
+                       double o = multiplier(stod(oandf.substr(blank+1,digit2)));
+
+                       size_t endpos = oandf.find(')');
+                       int digit3 = endpos - (blank2+1);
+                       double f = multiplier(stod(oandf.substr(blank2+1,digit3)));
+
+                       component_list.push_back(new CurrentSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
+                   
+               }else{
+
+                   double num = stod(s.substr(pos2+5));
+                   double o = multiplier(num);
+                   double a = 0;
+                   double f = 0;
+                   component_list.push_back(new CurrentSource(s.substr(0,2), a, o, f, nodefinder(s.substr(pos,4)), nodefinder(s.substr(pos2,4))));
+
+                 }
+
+               };
+               
            }  
             
 
