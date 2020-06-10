@@ -41,7 +41,7 @@ public:
         voltage_history.push_back(node_pos->voltage-node_neg->voltage);
     }
 
-     vector<double> access(){
+    vector<double> access(){
         vector<double> tmp;
         tmp.push_back(inductance);
         return tmp;
