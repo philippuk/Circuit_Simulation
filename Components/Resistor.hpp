@@ -26,6 +26,12 @@ public:
         return (node_neg->voltage - node_pos->voltage)/resistance;
     }
 
+    vector<double> access(){
+        vector<double> tmp;
+        tmp.push_back(resistance);
+        return tmp;
+    }
+
 };
 
 #endif

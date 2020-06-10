@@ -18,24 +18,26 @@ using namespace Eigen;
 
 //input part
 double stoptime=10e-3;
-double timestep=10e-6;
+double timestep=1e-6;
 
 Node N000={"N000",0};
 Node N001={"N001",0};
 Node N002={"N002",0};
 Node N003={"N003",0};
 
-VoltageSource VS("V1",0,0,1,&N001,&N000);
+VoltageSource VS("V1",1,1000,2,&N001,&N000);
 CurrentSource CS("I1",0,0,2e-3,&N002,&N003); 
 Resistor R1("R1",10e3,&N001,&N002);
 Resistor R2("R2",10e3,&N003,&N000);
 Resistor R3("R3",10e3,&N002,&N000);
+Inductor L1("L1",1e-3,&N002,&N000);
+Capacitor C1("C1",1e-9,&N002,&N000);
 
-vector<Node*> v_of_nodes={&N001,&N002,&N003};
-vector<Component*> component_list={&VS,&CS,&R1,&R2,&R3};
+vector<Node*> v_of_nodes={&N001,&N002};
+vector<Component*> component_list={&VS,&R1,&L1};
 
 //current statement
-set<Node*> s_of_nodes={&N000,&N001,&N002,&N003};
+set<Node*> s_of_nodes={&N000,&N001,&N002};
 //voltage statement
 set<Component*> s_of_component;
 
@@ -172,7 +174,7 @@ int main()
         }
 
         //calculation for the voltage matrix
-        cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
+        //cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
         cerr << "Here is the current vector:\n" << m_current << endl;
         m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
         cerr << "The voltage vector is:\n" << m_voltage << endl;
@@ -184,7 +186,7 @@ int main()
         }
 
         for (int k=0;k<component_list.size();k++){
-            if(component_list[k]->name()[0]=='V'){
+            if(component_list[k]->name()[0]=='V'||component_list[k]->name()[0]=='C'){
                 cout<<","<<component_list[k]->source_current(component_list);
             }else{
                 cout<<","<<component_list[k]->current();

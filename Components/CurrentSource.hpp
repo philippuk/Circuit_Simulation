@@ -29,5 +29,12 @@ public:
         return Amplitude*sin(2*M_PI*Frequency*time())+Offset;
     }
     
+    vector<double> access(){
+        vector<double> tmp;
+        tmp.push_back(Amplitude);
+        tmp.push_back(Frequency);
+        tmp.push_back(Offset);
+        return tmp;
+    }
 };
 #endif /* CurrentSource_hpp */

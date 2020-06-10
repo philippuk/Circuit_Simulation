@@ -4,6 +4,7 @@
 #include "Component.hpp"
 
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -112,6 +113,12 @@ public:
 
     void change_time(){
         com_time += com_timestep;
+    }
+
+    vector<double> access(){
+        vector<double> tmp;
+        tmp.push_back(capacitance);
+        return tmp;
     }
 };
 

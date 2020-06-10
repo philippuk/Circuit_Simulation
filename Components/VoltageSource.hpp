@@ -104,5 +104,13 @@ public:
 
         return sum;
     }
+
+    vector<double> access(){
+        vector<double> tmp;
+        tmp.push_back(Amplitude);
+        tmp.push_back(Frequency);
+        tmp.push_back(Offset);
+        return tmp;
+    }
 };
 #endif /* VoltageSource_hpp */

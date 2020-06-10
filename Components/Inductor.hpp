@@ -40,5 +40,11 @@ public:
         cerr<<node_pos->voltage-node_neg->voltage<<endl;
         voltage_history.push_back(node_pos->voltage-node_neg->voltage);
     }
+
+     vector<double> access(){
+        vector<double> tmp;
+        tmp.push_back(inductance);
+        return tmp;
+    }
 };
 #endif /* Inductor_hpp */

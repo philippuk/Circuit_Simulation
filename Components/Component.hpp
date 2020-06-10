@@ -56,6 +56,12 @@ public:
         return 0;
     };
 
+    virtual vector<double> access()
+    {
+        cerr<<"dont called this"<<endl;
+        return {};
+    };
+
     virtual double voltage()
     {
         cerr<<"Voltage Base case called"<<endl;
