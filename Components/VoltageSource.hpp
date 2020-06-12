@@ -30,7 +30,7 @@ protected:
         return false;
     }
     double node_current(vector<Component *> list, Node* node, Component* source){
-        double res;
+        double res=0;
         for(int a=0;a<list.size();a++){
             if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_positive()->name==node->name && list[a]!=source){
                 res += node_current(list, list[a]->node_negative(),list[a]);
@@ -71,7 +71,7 @@ public:
         assert(circuit_is_valid(list));
         vector<Component*>pos_connect;
         vector<Component*>neg_connect;
-        double sum;
+        double sum=0;
 
         //search positive node have voltage source connected
         for(int a=0;a<list.size();a++){

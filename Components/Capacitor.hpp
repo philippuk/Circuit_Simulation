@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <cassert>
 
 using namespace std;
 
@@ -12,8 +13,7 @@ class Capacitor:public Component
 {
 protected:
     double capacitance;
-    double voltage_history;
-    vector<double> current_history;
+    double current_history=0;
     double node_current(vector<Component *> list, Node* node, Component* source){
         double res;
         for(int a=0;a<list.size();a++){
@@ -94,21 +94,15 @@ public:
             sum=node_current(list, node_neg,this);
         }
 
-        current_history.push_back(sum);
+        if(com_time!=0){
+            current_history += sum*timestep();
+        }
         return sum;
     }
 
     //calculate the value of voltage source at particular instant
     double voltage(){
-        double sum;
-        if (current_history.size()==0){
-            return 0;
-        }else{
-            for(int i=0; i<current_history.size();i++){
-                sum += current_history[i]*timestep();
-            }
-            return sum/capacitance;
-        }
+        return -current_history/capacitance;
     }
 
     void change_time(){

@@ -4,6 +4,8 @@
 #include "Component.hpp"
 
 #include <vector>
+#include <unordered_map>
+#include <cassert>
 
 using namespace std;
 
@@ -11,7 +13,7 @@ class Inductor: public Component
 {
 protected:
     double inductance;
-    vector<double> voltage_history;
+    double voltage_history=0;
 public:
     Inductor(string name,double ind, Node* node1, Node* node2)
     {
@@ -20,25 +22,17 @@ public:
         node_pos=node1;
         node_neg=node2;
     }
-    
+
+
     //calculate the value of current source at particular instant
     double current(){
-        double sum;
-        if (voltage_history.size()==0){
-            return 0;
-        }else{
-            for(int i=0; i<voltage_history.size();i++){
-                sum += voltage_history[i]*timestep();
-            }
-            return sum/inductance;
-        }
+        return voltage_history/inductance;
     }
 
     //override change_time to input voltage history
     void change_time(){
+        voltage_history += (node_neg->voltage-node_pos->voltage)*timestep();
         com_time += com_timestep;
-        cerr<<node_pos->voltage-node_neg->voltage<<endl;
-        voltage_history.push_back(node_pos->voltage-node_neg->voltage);
     }
 
     vector<double> access(){

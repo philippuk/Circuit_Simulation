@@ -23,6 +23,9 @@ public:
     }
     
     double current(){
+        if (node_neg->voltage==node_pos->voltage){
+            return 0;
+        }
         return (node_neg->voltage - node_pos->voltage)/resistance;
     }
 

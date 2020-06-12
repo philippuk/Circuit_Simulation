@@ -25,7 +25,7 @@ vector<Node*> node_list;
 vector<string> words;
 double timestep;
 double stoptime;
-string s;
+string sentence;
 
 //current statement
 set<Node*> s_of_nodes;
@@ -188,12 +188,16 @@ vector<double> v_conductance_input(Node* node){
 }
 
 int main(int argc, char *argv[]){
+
+    cerr<<"filename:"<<argv[1]<<endl;
+
     ifstream infile(argv[1]);
 
     //input data
-    while(getline(infile,s)){
-        words=separate(s);
-
+    while(getline(infile,sentence)){
+        
+        words=separate(sentence);
+        
         for (size_t i = 0; i < words.size(); i++)
         {
             cerr<<words[i]<<" ";
@@ -201,16 +205,18 @@ int main(int argc, char *argv[]){
         
         cerr<<endl;
         
-        if(s[0]=='R'||s[0]=='L'||s[0]=='C'){
+        if(sentence[0]=='*'){
+            continue;
+        }else if(sentence[0]=='R'||sentence[0]=='L'||sentence[0]=='C'){
             assert(words.size()==4);
-            if(s[0]=='R'){
+            if(sentence[0]=='R'){
                 component_list.push_back(new Resistor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
-            }else if(s[0]=='C'){
+            }else if(sentence[0]=='C'){
                 component_list.push_back(new Capacitor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
             }else{
                 component_list.push_back(new Inductor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
             }
-        }else if(s[0]=='V'){
+        }else if(sentence[0]=='V'){
             assert(words.size()==4||words.size()==6);
             if(words.size()==4){
                 component_list.push_back(new VoltageSource(words[0], 0, 0, s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
@@ -220,7 +226,7 @@ int main(int argc, char *argv[]){
                 double o=s_value(words[3].substr(5));
                 component_list.push_back(new VoltageSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2])));
             }
-        }else if(s[0]=='I'){
+        }else if(sentence[0]=='I'){
             assert(words.size()==4||words.size()==6);
             if(words.size()==4){
                 component_list.push_back(new CurrentSource(words[0], 0, 0, s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
@@ -230,11 +236,9 @@ int main(int argc, char *argv[]){
                 double o=s_value(words[3].substr(5));
                 component_list.push_back(new CurrentSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2])));
             }
-        }else if(s[0]=='*'){
-            continue;
-        }else if(s[0]=='.'){
+        }else if(sentence[0]=='.'){
             if(words[0]==".end"){
-                cerr<<"Input finished...";
+                cerr<<"Input finished..."<<endl;
             }else if(words[0]==".tran"){
                 assert(words.size()==5);
 
@@ -277,7 +281,11 @@ int main(int argc, char *argv[]){
 
     //determine the value of s_of_nodes and s_of_component
     for(int j=0;j<component_list.size();j++){
-        if(component_list[j]->name()[0]=='V'||component_list[j]->name()[0]=='C'){
+        if(component_list[j]->name()[0]=='V'){
+            s_of_component.insert(component_list[j]);
+            s_of_nodes.erase(component_list[j]->node_positive());
+            s_of_nodes.erase(component_list[j]->node_negative());
+        }else if(component_list[j]->name()[0]=='C'){
             s_of_component.insert(component_list[j]);
             s_of_nodes.erase(component_list[j]->node_positive());
             s_of_nodes.erase(component_list[j]->node_negative());
@@ -286,7 +294,9 @@ int main(int argc, char *argv[]){
 
     //calculation process
     for (int i=0;timestep*i<=stoptime;i++){
+ 
         cout<<i*timestep;
+
         //initialize three matrix
         MatrixXd  m_conductance(node_list.size(), node_list.size());
         VectorXd m_current(node_list.size());
@@ -320,9 +330,9 @@ int main(int argc, char *argv[]){
         }
 
         //calculation for the voltage matrix
-        //cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
+        cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
         cerr << "Here is the current vector:\n" << m_current << endl;
-        m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
+        m_voltage = m_conductance.fullPivHouseholderQr().solve(m_current);
         cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         //Input & Output Node Voltages
@@ -339,7 +349,6 @@ int main(int argc, char *argv[]){
             }
             
         }
-
         cout<<endl;
 
         //progress to the next time interval
@@ -347,6 +356,5 @@ int main(int argc, char *argv[]){
             component_list[k]->change_time(); 
         }
     }
-    
 }
  

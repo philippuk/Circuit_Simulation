@@ -17,14 +17,10 @@ protected:
     Node* node_pos;
     Node* node_neg;
 public:
-    void set_time(double time){
-        com_time=time;
-    }
-    
     void set_timestep(double timestep){
         com_timestep=timestep;
     }
-    
+
     Node* node_positive(){
         return node_pos;
     }
@@ -78,6 +74,12 @@ public:
     {
         cerr<<"Source Current Base case called"<<endl;
         return 0;
+    }
+
+    void swap(){
+        Node* tmp=node_neg;
+        node_neg=node_pos;
+        node_pos=tmp;
     }
 };
 
