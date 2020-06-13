@@ -7,7 +7,7 @@
 #include <set>
 
 #include "Node.hpp"
-#include "Eigen/Dense"
+#include "../Eigen/Dense"
 
 #include "Components/CurrentSource.hpp"
 #include "Components/VoltageSource.hpp"
@@ -21,12 +21,16 @@ using namespace std;
 using namespace Eigen;
 
 //global variables
-vector<Component*> component_list;
+vector<Component*> component_list_real;
+vector<Component*> component_list_cal;
+vector<Diode*> diode_list;
 vector<Node*> node_list;
 vector<string> words;
 double timestep;
 double stoptime;
 string sentence;
+int diode_count=0;
+int loop_count=0;
 
 //current statement
 set<Node*> s_of_nodes;
@@ -34,6 +38,19 @@ set<Node*> s_of_nodes;
 set<Component*> s_of_component;
 
 //helper functions
+bool convergence(){
+    bool res=true;
+    for (int c=0;c<diode_list.size();c++){
+        int no_of_values =diode_list[c]->guess_voltage.size();
+        if(no_of_values<3){
+            res= false;
+        }else{
+            res = res&& (abs(diode_list[c]->guess_voltage[no_of_values-1]-diode_list[c]->guess_voltage[no_of_values-2])<=0.5) && (abs(diode_list[c]->guess_voltage[no_of_values-1]-diode_list[c]->guess_voltage[no_of_values-3])<=0.5);
+        }
+    }
+    return res;
+}
+
 vector<string> separate(string str) { 
    vector<string> tmp;
    string word = ""; 
@@ -107,7 +124,7 @@ double s_value(string s){
 bool comparename(const Node* node1, const Node* node2){
     if(node1->name=="0"){
         return true;
-    }else if (node2->name=="0"){
+    }else if(node2->name=="0"){
         return false;
     }else{
         int a=stoi(node1->name.substr(1));
@@ -119,12 +136,12 @@ bool comparename(const Node* node1, const Node* node2){
 //calculate the value for the current vector(current statement)
 double v_current(Node* node){
     double sum=0;
-    for(int j=0;j<component_list.size();j++){
-        if((component_list[j]->name()[0]=='I'||component_list[j]->name()[0]=='L') && component_list[j]->node_positive()->name==node->name){
-            sum += component_list[j]->current();
+    for(int j=0;j<component_list_cal.size();j++){
+        if((component_list_cal[j]->name()[0]=='I'||component_list_cal[j]->name()[0]=='L') && component_list_cal[j]->node_positive()->name==node->name){
+            sum += component_list_cal[j]->current();
         }
-        if((component_list[j]->name()[0]=='I'||component_list[j]->name()[0]=='L') && component_list[j]->node_negative()->name==node->name){
-            sum -= component_list[j]->current();
+        if((component_list_cal[j]->name()[0]=='I'||component_list_cal[j]->name()[0]=='L') && component_list_cal[j]->node_negative()->name==node->name){
+            sum -= component_list_cal[j]->current();
         }
     }
     return sum;
@@ -134,18 +151,18 @@ double v_current(Node* node){
 double v_conductance(Node* node1, Node* node2){
     double sum=0;
     if(node1->name==node2->name){
-        for(int j=0;j<component_list.size();j++){
-            if(component_list[j]->name()[0]=='R' && (component_list[j]->node_positive()->name==node1->name||component_list[j]->node_negative()->name==node1->name)){
-                sum += component_list[j]->conductance();
+        for(int j=0;j<component_list_cal.size();j++){
+            if(component_list_cal[j]->name()[0]=='R' && (component_list_cal[j]->node_positive()->name==node1->name||component_list_cal[j]->node_negative()->name==node1->name)){
+                sum += component_list_cal[j]->conductance();
             }
         }
     }else{
-        for(int j=0;j<component_list.size();j++){
-            if(component_list[j]->name()[0]=='R' && component_list[j]->node_positive()->name==node1->name && component_list[j]->node_negative()->name==node2->name){
-                sum += component_list[j]->conductance();
+        for(int j=0;j<component_list_cal.size();j++){
+            if(component_list_cal[j]->name()[0]=='R' && component_list_cal[j]->node_positive()->name==node1->name && component_list_cal[j]->node_negative()->name==node2->name){
+                sum += component_list_cal[j]->conductance();
             }
-            if (component_list[j]->name()[0]=='R' && component_list[j]->node_positive()->name==node2->name && component_list[j]->node_negative()->name==node1->name){
-                sum += component_list[j]->conductance();
+            if (component_list_cal[j]->name()[0]=='R' && component_list_cal[j]->node_positive()->name==node2->name && component_list_cal[j]->node_negative()->name==node1->name){
+                sum += component_list_cal[j]->conductance();
             }
         }
     }
@@ -157,7 +174,7 @@ vector<double> v_conductance_input(Component* VS){
     vector<double> res;
     for(int h=0;h<node_list.size();h++){
             res.push_back(0);
-        }
+    }
     if(VS->node_positive()->name=="0"){
         res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
     }else if(VS->node_negative()->name=="0"){
@@ -211,35 +228,53 @@ int main(int argc, char *argv[]){
         }else if(sentence[0]=='R'||sentence[0]=='L'||sentence[0]=='C'){
             assert(words.size()==4);
             if(sentence[0]=='R'){
-                component_list.push_back(new Resistor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
+                Resistor* r=new Resistor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(r);
+                component_list_real.push_back(r);
             }else if(sentence[0]=='C'){
-                component_list.push_back(new Capacitor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
+                Capacitor* c=new Capacitor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(c);
+                component_list_real.push_back(c);
             }else{
-                component_list.push_back(new Inductor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
+                Inductor* l=new Inductor(words[0], s_value(words[3]), nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(l);
+                component_list_real.push_back(l);
             }
         }else if(sentence[0]=='V'){
             assert(words.size()==4||words.size()==6);
             if(words.size()==4){
-                component_list.push_back(new VoltageSource(words[0], 0, 0, s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
+                VoltageSource *vs=new VoltageSource(words[0], 0, 0, s_value(words[3]), nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(vs);
+                component_list_real.push_back(vs);
             }else{
                 double a=s_value(words[4]);
                 double f=s_value(words[5].substr(0,words[5].size()-1));
                 double o=s_value(words[3].substr(5));
-                component_list.push_back(new VoltageSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2])));
+                VoltageSource *vs=new VoltageSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(vs);
+                component_list_real.push_back(vs);
             }
         }else if(sentence[0]=='I'){
             assert(words.size()==4||words.size()==6);
             if(words.size()==4){
-                component_list.push_back(new CurrentSource(words[0], 0, 0, s_value(words[3]), nodefinder(words[1]), nodefinder(words[2])));
+                CurrentSource *cs=new CurrentSource(words[0], 0, 0, s_value(words[3]), nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(cs);
+                component_list_real.push_back(cs);
             }else{
                 double a=s_value(words[4]);
                 double f=s_value(words[5].substr(0,words[5].size()-1));
                 double o=s_value(words[3].substr(5));
-                component_list.push_back(new CurrentSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2])));
+                CurrentSource *cs=new CurrentSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2]));
+                component_list_cal.push_back(cs);
+                component_list_real.push_back(cs);
             }
         }else if (sentence[0]=='D'){
             assert(words.size()==4);
-            component_list.push_back(new Diode(words[0],words[3],nodefinder(words[1]), nodefinder(words[2])));
+            Resistor *Rd=new Resistor("R"+words[0], 0, nodefinder(words[1]), nodefinder(words[2]));
+            Diode *d =new Diode(words[0], nodefinder(words[1]), nodefinder(words[2]),Rd);
+            component_list_real.push_back(d);
+            diode_list.push_back(d);
+            component_list_cal.push_back(Rd);
         }else if(sentence[0]=='.'){
             if(words[0]==".end"){
                 cerr<<"Input finished..."<<endl;
@@ -269,8 +304,8 @@ int main(int argc, char *argv[]){
     node_list.erase(node_list.begin());
 
     //set timestep for component
-    for (int i=0;i<component_list.size();i++){
-        component_list[i]->set_timestep(timestep);
+    for (int i=0;i<component_list_cal.size();i++){
+        component_list_cal[i]->set_timestep(timestep);
     }
 
     //output headers
@@ -278,28 +313,26 @@ int main(int argc, char *argv[]){
     for(int i=0;i<node_list.size();i++){
         cout<<",V("<<node_list[i]->name<<")";
     }
-    for(int i=0;i<component_list.size();i++){
-        cout<<",I("<<component_list[i]->name()<<")";
+    for(int i=0;i<component_list_real.size();i++){
+        cout<<",I("<<component_list_real[i]->name()<<")";
     }
     cout<<endl;
 
     //determine the value of s_of_nodes and s_of_component
-    for(int j=0;j<component_list.size();j++){
-        if(component_list[j]->name()[0]=='V'){
-            s_of_component.insert(component_list[j]);
-            s_of_nodes.erase(component_list[j]->node_positive());
-            s_of_nodes.erase(component_list[j]->node_negative());
-        }else if(component_list[j]->name()[0]=='C'){
-            s_of_component.insert(component_list[j]);
-            s_of_nodes.erase(component_list[j]->node_positive());
-            s_of_nodes.erase(component_list[j]->node_negative());
+    for(int j=0;j<component_list_cal.size();j++){
+        if(component_list_cal[j]->name()[0]=='V'){
+            s_of_component.insert(component_list_cal[j]);
+            s_of_nodes.erase(component_list_cal[j]->node_positive());
+            s_of_nodes.erase(component_list_cal[j]->node_negative());
+        }else if(component_list_cal[j]->name()[0]=='C'){
+            s_of_component.insert(component_list_cal[j]);
+            s_of_nodes.erase(component_list_cal[j]->node_positive());
+            s_of_nodes.erase(component_list_cal[j]->node_negative());
         }
     }
 
     //calculation process
-    for (int i=0;timestep*i<=stoptime;i++){
- 
-        cout<<i*timestep;
+    for (int i=0;timestep*i<=1e-6;i++){
 
         //initialize three matrix
         MatrixXd  m_conductance(node_list.size(), node_list.size());
@@ -308,6 +341,12 @@ int main(int argc, char *argv[]){
 
         //value to input row by row
         int row=0;
+
+        //change dynamic resistance
+        for(int d=0;d<diode_list.size();d++){
+            cerr<<diode_list[d]->guess_voltage.back()<<endl;
+            diode_list[d]->d_resistance();
+        }
 
         //input voltage statement
         set<Component*>::iterator it;
@@ -325,6 +364,9 @@ int main(int argc, char *argv[]){
         //input current statement
         for (n_it = s_of_nodes.begin(); n_it != s_of_nodes.end(); ++n_it) {
             assert(row<=node_list.size());
+            if(s_of_component.empty() && (*n_it)->name=="0"){
+                continue;
+            }
             m_current(row)=v_current(*n_it);
             vector<double>tmp=v_conductance_input(*n_it);
             for (int l=0;l<tmp.size();l++){
@@ -339,25 +381,50 @@ int main(int argc, char *argv[]){
         m_voltage = m_conductance.fullPivHouseholderQr().solve(m_current);
         cerr << "The voltage vector is:\n" << m_voltage << endl;
 
-        //Input & Output Node Voltages
         for (int k=0;k<node_list.size();k++){
-            cout<<","<<m_voltage(k);
-            node_list[k]->voltage=m_voltage(k);
+             node_list[k]->voltage=m_voltage(k);
         }
 
-        for (int k=0;k<component_list.size();k++){
-            if(component_list[k]->name()[0]=='V'||component_list[k]->name()[0]=='C'){
-                cout<<","<<component_list[k]->source_current(component_list);
-            }else{
-                cout<<","<<component_list[k]->current();
+        if(loop_count>4){
+            exit(1);
+        }
+
+        if(diode_count==0 ||(diode_count>0 && convergence())){
+            
+            cout<<i*timestep;
+            
+            //Input & Output Node Voltages
+            for (int k=0;k<node_list.size();k++){
+                cout<<","<<m_voltage(k);
+            }
+
+            for (int k=0;k<component_list_real.size();k++){
+                if(component_list_real[k]->name()[0]=='V'||component_list_real[k]->name()[0]=='C'){
+                    cout<<","<<component_list_real[k]->current(component_list_cal);
+                }else{
+                    cout<<","<<component_list_real[k]->current();
+                }
+                
             }
             
-        }
-        cout<<endl;
+            cout<<endl;
 
-        //progress to the next time interval
-        for (int k=0;k<component_list.size();k++){
-            component_list[k]->change_time(); 
+            //progress to the next time interval
+            for (int k=0;k<component_list_cal.size();k++){
+                component_list_cal[k]->change_time(); 
+            }
+
+            for (int c=0;c<diode_list.size();c++){
+                diode_list[c]->guess_voltage.clear();
+                diode_list[c]->guess_voltage.push_back(diode_list[c]->voltage());
+            } 
+        }else{ 
+            loop_count++;
+            i--;
+            for (int c=0;c<diode_list.size();c++){
+                cerr<<diode_list[c]->voltage()<<endl;
+                diode_list[c]->guess_voltage.push_back(diode_list[c]->voltage());
+            }  
         }
     }
 }

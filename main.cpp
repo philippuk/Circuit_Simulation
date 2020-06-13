@@ -322,6 +322,9 @@ int main(int argc, char *argv[]){
         //input current statement
         for (n_it = s_of_nodes.begin(); n_it != s_of_nodes.end(); ++n_it) {
             assert(row<=node_list.size());
+            if(s_of_component.empty() && (*n_it)->name=="0"){
+                continue;
+            }
             m_current(row)=v_current(*n_it);
             vector<double>tmp=v_conductance_input(*n_it);
             for (int l=0;l<tmp.size();l++){

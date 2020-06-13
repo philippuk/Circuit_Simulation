@@ -7,9 +7,8 @@ using namespace std;
 
 class Resistor:public Component
 {
-protected:
-    double resistance;
 public:
+    double resistance;
     Resistor(string name, double res, Node * node1, Node * node2)
     {
         com_name=name;
