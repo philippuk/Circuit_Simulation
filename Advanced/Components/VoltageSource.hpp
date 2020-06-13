@@ -1,21 +1,36 @@
-#ifndef Capacitor_hpp
-#define Capacitor_hpp
+#ifndef VoltageSource_hpp
+#define VoltageSource_hpp
 
 #include "Component.hpp"
 
-#include <vector>
+#include <cmath>
 #include <unordered_map>
 #include <cassert>
 
 using namespace std;
 
-class Capacitor:public Component
+class VoltageSource:public Component
 {
 protected:
-    double capacitance;
-    double current_history=0;
+    double Amplitude;
+    double Frequency;
+    double Offset;
+    bool circuit_is_valid(vector<Component *> list){
+        unordered_map<Node*, int> nodes;
+        for (int b = 0; b < list.size(); b++){
+            if(list[b]->name()[0]=='V'||list[b]->name()[0]=='C'){
+                nodes[list[b]->node_positive()]++;
+                nodes[list[b]->node_negative()]++;
+            }
+        }
+        for (auto e : nodes){
+            if (e.second == 1)
+                return true;
+        }
+        return false;
+    }
     double node_current(vector<Component *> list, Node* node, Component* source){
-        double res;
+        double res=0;
         for(int a=0;a<list.size();a++){
             if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_positive()->name==node->name && list[a]!=source){
                 res += node_current(list, list[a]->node_negative(),list[a]);
@@ -35,35 +50,28 @@ protected:
         }
         return res;
     }
-    bool circuit_is_valid(vector<Component *> list){
-        unordered_map<Node*, int> nodes;
-        for (int b = 0; b < list.size(); b++){
-            if(list[b]->name()[0]=='V'||list[b]->name()[0]=='C'){
-                nodes[list[b]->node_positive()]++;
-                nodes[list[b]->node_negative()]++;
-            }
-        }
-        for (auto e : nodes){
-            if (e.second == 1)
-                return true;
-        }
-        return false;
-    }
 public:
-    Capacitor(string name,double cap, Node* node1, Node* node2)
+    VoltageSource(string name, double a, double f, double o, Node* node1, Node* node2)
     {
         com_name=name;
-        capacitance=cap;
+        Amplitude=a;
+        Frequency=f;
+        Offset=o;
         node_pos=node1;
         node_neg=node2;
     }
+    
+    //calculate the value of voltage source
+    double voltage(){
+        return Amplitude*sin(2*M_PI*Frequency*time())+Offset ;
+    }
 
     //calculate the value of current by iterative method
-    double current(vector<Component *> list){
+    double source_current(vector<Component *> list){
         assert(circuit_is_valid(list));
         vector<Component*>pos_connect;
         vector<Component*>neg_connect;
-        double sum;
+        double sum=0;
 
         //search positive node have voltage source connected
         for(int a=0;a<list.size();a++){
@@ -94,26 +102,15 @@ public:
             sum=node_current(list, node_neg,this);
         }
 
-        if(com_time!=0){
-            current_history += sum*timestep();
-        }
         return sum;
-    }
-
-    //calculate the value of voltage source at particular instant
-    double voltage(){
-        return -current_history/capacitance;
-    }
-
-    void change_time(){
-        com_time += com_timestep;
     }
 
     vector<double> access(){
         vector<double> tmp;
-        tmp.push_back(capacitance);
+        tmp.push_back(Amplitude);
+        tmp.push_back(Frequency);
+        tmp.push_back(Offset);
         return tmp;
     }
 };
-
-#endif /* Capacitor_hpp */
+#endif /* VoltageSource_hpp */

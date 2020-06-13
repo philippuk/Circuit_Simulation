@@ -15,6 +15,7 @@
 #include "Components/Inductor.hpp"
 #include "Components/Capacitor.hpp"
 #include "Components/Component.hpp"
+#include "Components/Diode.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -71,14 +72,13 @@ double s_value(string s){
             if (s[i]=='.'){
                 continue;
             }else if(isalpha(s[i])){
-                end_dig_pos=i;
+                end_dig_pos=i-1;
                 break;
             } 
-        }   
+        }
 
-        cerr<<s.substr(0,end_dig_pos)<<endl;
-        num=stod(s.substr(0,end_dig_pos));
-        multiplier=s.substr(end_dig_pos);
+        num=stod(s.substr(0,s.size()-end_dig_pos));
+        multiplier=s.substr(end_dig_pos+1);
         
         if(multiplier=="k"){
             value = num*1000;
@@ -237,6 +237,9 @@ int main(int argc, char *argv[]){
                 double o=s_value(words[3].substr(5));
                 component_list.push_back(new CurrentSource(words[0], a, f, o, nodefinder(words[1]), nodefinder(words[2])));
             }
+        }else if (sentence[0]=='D'){
+            assert(words.size()==4);
+            component_list.push_back(new Diode(words[0],words[3],nodefinder(words[1]), nodefinder(words[2])));
         }else if(sentence[0]=='.'){
             if(words[0]==".end"){
                 cerr<<"Input finished..."<<endl;
@@ -245,7 +248,6 @@ int main(int argc, char *argv[]){
 
                 stoptime=s_value(words[2].substr(0,words[2].size()-1));
                 timestep=s_value(words[4].substr(0,words[4].size()-1));
-                timestep=0.01e-6;
             }else{
                 cerr<<"Illegal instruction found..."<<endl;
                 exit(1);
@@ -296,7 +298,7 @@ int main(int argc, char *argv[]){
 
     //calculation process
     for (int i=0;timestep*i<=stoptime;i++){
-
+ 
         cout<<i*timestep;
 
         //initialize three matrix
@@ -332,10 +334,10 @@ int main(int argc, char *argv[]){
         }
 
         //calculation for the voltage matrix
-        //cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
-        //cerr << "Here is the current vector:\n" << m_current << endl;
+        cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
+        cerr << "Here is the current vector:\n" << m_current << endl;
         m_voltage = m_conductance.fullPivHouseholderQr().solve(m_current);
-        //cerr << "The voltage vector is:\n" << m_voltage << endl;
+        cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         //Input & Output Node Voltages
         for (int k=0;k<node_list.size();k++){
@@ -345,7 +347,7 @@ int main(int argc, char *argv[]){
 
         for (int k=0;k<component_list.size();k++){
             if(component_list[k]->name()[0]=='V'||component_list[k]->name()[0]=='C'){
-                cout<<","<<component_list[k]->current(component_list);
+                cout<<","<<component_list[k]->source_current(component_list);
             }else{
                 cout<<","<<component_list[k]->current();
             }

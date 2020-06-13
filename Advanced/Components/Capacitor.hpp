@@ -59,7 +59,7 @@ public:
     }
 
     //calculate the value of current by iterative method
-    double current(vector<Component *> list){
+    double source_current(vector<Component *> list){
         assert(circuit_is_valid(list));
         vector<Component*>pos_connect;
         vector<Component*>neg_connect;
