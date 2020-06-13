@@ -245,7 +245,6 @@ int main(int argc, char *argv[]){
 
                 stoptime=s_value(words[2].substr(0,words[2].size()-1));
                 timestep=s_value(words[4].substr(0,words[4].size()-1));
-                timestep=0.01e-6;
             }else{
                 cerr<<"Illegal instruction found..."<<endl;
                 exit(1);
