@@ -400,12 +400,12 @@ int main(int argc, char *argv[]){
     }
 
     //calculation process
-    for (int i=0;timestep*i<=1e-6;i++){
+    for (int i=0;timestep*i<=stoptime;i++){
 
         //initialize three matrix
-        MatrixXd m_conductance(node_list.size(), node_list.size());
-        VectorXd m_current(node_list.size());
-        VectorXd m_voltage(node_list.size());
+        MatrixXd m_conductance(s_of_component.size()+s_of_nodes.size(), node_list.size());
+        VectorXd m_current(s_of_component.size()+s_of_nodes.size());
+        VectorXd m_voltage(s_of_component.size()+s_of_nodes.size());
 
         //value to input row by row
         int row=0;
@@ -441,6 +441,7 @@ int main(int argc, char *argv[]){
             if(s_of_component.empty() && (*n_it)->name=="0"){
                 continue;
             }
+            cerr<<(*n_it)->name<<endl;
             m_current(row)=v_current(*n_it);
             vector<double>tmp=v_conductance_input(*n_it);
             for (int l=0;l<tmp.size();l++){
