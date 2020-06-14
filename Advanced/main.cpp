@@ -32,6 +32,7 @@ double timestep;
 double stoptime;
 string sentence;
 int diode_count=0;
+int loop_count=0;
 
 //current statement
 set<Node*> s_of_nodes;
@@ -46,7 +47,10 @@ bool convergence(){
         if(no_of_values<2){
             res= false;
         }else{
-            res = res&& (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-1])<=0.5) && (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values])<=0.5);
+            cerr<<abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-1])<<endl;
+            cerr<<abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-2])<<endl;
+
+            res = res&& (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-1])<=0.005) && (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-2])<=0.005);
         }
     }
     return res;
@@ -79,7 +83,8 @@ Node* nodefinder(string a){
 }
 
 double s_value(string s){
-    int end_dig_pos;
+    int m_pos;
+    string no;
     double value;
     double num;
     string multiplier;
@@ -88,15 +93,17 @@ double s_value(string s){
 
         for(int i=0;i<s.size();i++){
             if (s[i]=='.'){
-                continue;
+                no.push_back(s[i]);
             }else if(isalpha(s[i])){
-                end_dig_pos=i-1;
+                m_pos=i;
                 break;
-            } 
+            }else{
+                no.push_back(s[i]);
+            }
         }
 
-        num=stod(s.substr(0,s.size()-end_dig_pos));
-        multiplier=s.substr(end_dig_pos+1);
+        num=stod(no);
+        multiplier=s.substr(m_pos);
         
         if(multiplier=="k"){
             value = num*1000;
@@ -408,7 +415,7 @@ int main(int argc, char *argv[]){
 
         //change thevenin resistance and thevenin voltage
         for(int d=0;d<diode_list.size();d++){
-            cerr<<diode_list[d]->guess_voltage.back()<<endl;
+            cerr<<"Current Guess Voltage:"<<diode_list[d]->guess_voltage.back()<<endl;
             diode_list[d]->th_resistance();
             diode_list[d]->th_voltage();
         }
@@ -446,13 +453,18 @@ int main(int argc, char *argv[]){
         }
 
         //calculation for the voltage matrix
-        cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
-        cerr << "Here is the current vector:\n" << m_current << endl;
+        //cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
+        //cerr << "Here is the current vector:\n" << m_current << endl;
         m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
-        cerr << "The voltage vector is:\n" << m_voltage << endl;
+        //cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         for (int k=0;k<node_list.size();k++){
             node_list[k]->voltage=m_voltage(k);
+        }
+
+        if(loop_count>20){
+            cerr<<"Loop over"+to_string(loop_count)+"times"<<endl;
+            exit(1);
         }
 
         if(diode_count==0 ||(diode_count>0 && convergence())){
@@ -490,14 +502,15 @@ int main(int argc, char *argv[]){
             for (int c=0;c<diode_list.size();c++){
                 diode_list[c]->guess_voltage.clear();
                 diode_list[c]->guess_voltage.push_back(diode_list[c]->voltage());
-            } 
+            }
+            loop_count=0;
         }else{ 
             i--;
             for (int c=0;c<diode_list.size();c++){
-                cerr<<diode_list[c]->voltage()<<endl;
+                cerr<<"Next Guess Voltage:"<<diode_list[c]->voltage()<<endl;
                 diode_list[c]->guess_voltage.push_back(diode_list[c]->voltage());
             }  
-            exit(1);
+            loop_count++;
         }
     }
 }

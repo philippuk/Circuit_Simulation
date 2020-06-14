@@ -16,7 +16,7 @@ protected:
     VoltageSource* Vth;
     Resistor * Rth;
 public:
-    vector<double> guess_voltage={0.7};
+    vector<double> guess_voltage={1};
     Diode(string name, Node *anode, Node *cathode, Resistor* R, VoltageSource* V)
     {
         com_name=name;
