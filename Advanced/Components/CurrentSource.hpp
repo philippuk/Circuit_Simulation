@@ -12,8 +12,8 @@ class CurrentSource:public Component
 protected:
     double Amplitude;
     double Frequency;
-    double Offset;
 public:
+    double Offset;
     CurrentSource(string name,double a, double f, double o, Node* node1, Node* node2)
     {
         com_name=name;

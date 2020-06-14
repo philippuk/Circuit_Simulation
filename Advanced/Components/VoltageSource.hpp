@@ -14,7 +14,7 @@ class VoltageSource:public Component
 protected:
     double Amplitude;
     double Frequency;
-    bool circuit_is_valid(vector<Component *> list){
+    bool circuit_is_valid(const vector<Component *> &list){
         unordered_map<Node*, int> nodes;
         for (int b = 0; b < list.size(); b++){
             if(list[b]->name()[0]=='V'||list[b]->name()[0]=='C'){
@@ -28,7 +28,7 @@ protected:
         }
         return false;
     }
-    double node_current(vector<Component *> list, Node* node, Component* source){
+    double node_current(const vector<Component *> &list, Node* node, Component* source){
         double res=0;
         for(int a=0;a<list.size();a++){
             if((list[a]->name()[0]=='V'||list[a]->name()[0]=='C') && list[a]->node_positive()->name==node->name && list[a]!=source){
@@ -67,7 +67,7 @@ public:
     }
 
     //calculate the value of current by iterative method
-    double source_current(vector<Component *> list){
+    double current(const vector<Component *> &list){
         assert(circuit_is_valid(list));
         vector<Component*>pos_connect;
         vector<Component*>neg_connect;

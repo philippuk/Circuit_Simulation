@@ -70,15 +70,16 @@ public:
         return 0;
     };
 
-    virtual double current(vector<Component *> list)
+    virtual double current(const vector<Component *> &list)
     {
         cerr<<"Source Current Base case called"<<endl;
         return 0;
     }
 
-    virtual double current(double voltage){
-        cerr<<"Diode Current Base case called"<<endl;
-        return 0;
+    virtual vector<double> bjt_current()
+    {
+        cerr<<"BJT Current Base case called"<<endl;
+        return {};
     }
 };
 

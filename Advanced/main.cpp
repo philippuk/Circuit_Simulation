@@ -16,6 +16,7 @@
 #include "Components/Capacitor.hpp"
 #include "Components/Component.hpp"
 #include "Components/Diode.hpp"
+#include "Components/Transistor.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -24,6 +25,7 @@ using namespace Eigen;
 vector<Component*> component_list_real;
 vector<Component*> component_list_cal;
 vector<Diode*> diode_list;
+vector<Transistor*>tran_list;
 vector<Node*> node_list;
 vector<string> words;
 double timestep;
@@ -298,6 +300,37 @@ int main(int argc, char *argv[]){
             component_list_cal.push_back(rd);
             component_list_cal.push_back(vs);
             diode_count++;
+        }else if(sentence[0]=='Q'){
+            assert(words.size()==5);
+            string nod="P"+to_string(diode_count);
+            Resistor *rd;
+            VoltageSource *vs;
+            CurrentSource *cs;
+            Diode *d;
+            Transistor *q;
+            if(words[4]=="NPN"){
+                rd=new Resistor("R"+words[0], 0, nodefinder(words[2]), nodefinder(nod));
+                vs=new VoltageSource("V"+words[0],0,0,0,nodefinder(nod),nodefinder(words[3]));
+                cs=new CurrentSource("I"+words[0],0,0,0,nodefinder(words[1]),nodefinder(words[3]));
+                d =new Diode("D"+words[0], nodefinder(words[2]), nodefinder(words[3]),rd,vs);
+                q=new Transistor(words[0],d,cs);
+            }else if(words[4]=="PNP"){
+                rd=new Resistor("R"+words[0], 0, nodefinder(words[3]), nodefinder(nod));
+                vs=new VoltageSource("V"+words[0],0,0,0,nodefinder(nod),nodefinder(words[2]));
+                cs=new CurrentSource("I"+words[0],0,0,0,nodefinder(words[3]),nodefinder(words[1]));
+                d =new Diode("D"+words[0], nodefinder(words[3]), nodefinder(words[2]),rd,vs);
+                q=new Transistor(words[0],d,cs);
+            }else{
+                cerr<<"Invalid BJT type"<<endl;
+                exit(1);
+            }
+            component_list_real.push_back(q);
+            tran_list.push_back(q);
+            diode_list.push_back(d);
+            component_list_cal.push_back(rd);
+            component_list_cal.push_back(vs);
+            component_list_cal.push_back(cs);
+            diode_count++;
         }else if(sentence[0]=='.'){
             if(words[0]==".end"){
                 cerr<<"Input finished..."<<endl;
@@ -339,7 +372,13 @@ int main(int argc, char *argv[]){
         }
     }
     for(int i=0;i<component_list_real.size();i++){
-        cout<<",I("<<component_list_real[i]->name()<<")";
+        if(component_list_real[i]->name()[0]!='Q'){
+            cout<<",I("+component_list_real[i]->name()+")";
+        }else{
+            cout<<",I("+component_list_real[i]->name()+"c"+")";
+            cout<<",I("+component_list_real[i]->name()+"b"+")";
+            cout<<",I("+component_list_real[i]->name()+"e"+")";
+        }
     }
     cout<<endl;
 
@@ -374,6 +413,11 @@ int main(int argc, char *argv[]){
             diode_list[d]->th_voltage();
         }
 
+        //change current dependent current source
+        for(int d=0;d<tran_list.size();d++){
+            tran_list[d]->current_source();
+        }
+
         //input voltage statement
         set<Component*>::iterator it;
         for (it = s_of_component.begin(); it != s_of_component.end(); ++it) {
@@ -404,7 +448,7 @@ int main(int argc, char *argv[]){
         //calculation for the voltage matrix
         cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
         cerr << "Here is the current vector:\n" << m_current << endl;
-        m_voltage = m_conductance.fullPivHouseholderQr().solve(m_current);
+        m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
         cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         for (int k=0;k<node_list.size();k++){
@@ -425,6 +469,11 @@ int main(int argc, char *argv[]){
             for (int k=0;k<component_list_real.size();k++){
                 if(component_list_real[k]->name()[0]=='V'||component_list_real[k]->name()[0]=='C'){
                     cout<<","<<component_list_real[k]->current(component_list_cal);
+                }else if (component_list_real[k]->name()[0]=='Q'){
+                    vector<double> tmp=component_list_real[k]->bjt_current();
+                    for (int m=0;m<tmp.size();m++){
+                        cout<<","<<tmp[m];
+                    }
                 }else{
                     cout<<","<<component_list_real[k]->current();
                 }
@@ -448,6 +497,7 @@ int main(int argc, char *argv[]){
                 cerr<<diode_list[c]->voltage()<<endl;
                 diode_list[c]->guess_voltage.push_back(diode_list[c]->voltage());
             }  
+            exit(1);
         }
     }
 }

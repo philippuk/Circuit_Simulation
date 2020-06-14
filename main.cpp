@@ -336,7 +336,7 @@ int main(int argc, char *argv[]){
         //calculation for the voltage matrix
         //cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
         //cerr << "Here is the current vector:\n" << m_current << endl;
-        m_voltage = m_conductance.fullPivHouseholderQr().solve(m_current);
+        m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
         //cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         //Input & Output Node Voltages

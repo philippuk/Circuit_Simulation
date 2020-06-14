@@ -2,6 +2,8 @@
 #define Diode_hpp
 
 #include "Component.hpp"
+#include "VoltageSource.hpp"
+#include "Resistor.hpp"
 
 #include <cmath>
 #include <vector>
@@ -14,7 +16,7 @@ protected:
     VoltageSource* Vth;
     Resistor * Rth;
 public:
-    vector<double> guess_voltage={1};
+    vector<double> guess_voltage={0.7};
     Diode(string name, Node *anode, Node *cathode, Resistor* R, VoltageSource* V)
     {
         com_name=name;
