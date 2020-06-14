@@ -5,5 +5,5 @@ R1 N002 N004 1k
 R2 N001 0 1k
 R3 N003 N004 1k
 R4 N004 0 1k
-.tran 0 10ms 0 1us
+.tran 0 1ms 0 0.1us
 .end
