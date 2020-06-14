@@ -14,7 +14,6 @@ class VoltageSource:public Component
 protected:
     double Amplitude;
     double Frequency;
-    double Offset;
     bool circuit_is_valid(vector<Component *> list){
         unordered_map<Node*, int> nodes;
         for (int b = 0; b < list.size(); b++){
@@ -51,6 +50,7 @@ protected:
         return res;
     }
 public:
+    double Offset;
     VoltageSource(string name, double a, double f, double o, Node* node1, Node* node2)
     {
         com_name=name;

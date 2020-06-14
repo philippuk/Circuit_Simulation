@@ -11,15 +11,17 @@ using namespace std;
 class Diode:public Component
 {
 protected:
-    Resistor * Rd;
+    VoltageSource* Vth;
+    Resistor * Rth;
 public:
-    vector<double> guess_voltage={0};
-    Diode(string name, Node *anode, Node *cathode, Resistor* R)
+    vector<double> guess_voltage={1};
+    Diode(string name, Node *anode, Node *cathode, Resistor* R, VoltageSource* V)
     {
         com_name=name;
         node_pos=cathode;
         node_neg=anode;
-        Rd=R;
+        Rth=R;
+        Vth=V;
     }
 
     double voltage(){
@@ -27,13 +29,16 @@ public:
     }
     
     double current(){
-        double i=pow(10,-15)*exp(guess_voltage.back()/(25*pow(10,-3)));
-        return i;
+        return pow(10,-15)*exp(guess_voltage.back()/(25*pow(10,-3)));
     }
 
-    void d_resistance(){
+    void th_resistance(){
         double i=pow(10,-15)*exp(guess_voltage.back()/(25*pow(10,-3)));
-        Rd->resistance=25e-3/i;
+        Rth->resistance=25e-3/i;
+    }
+
+    void th_voltage(){
+        Vth->Offset=guess_voltage.back()-25e-3;
     }
 
     vector<double> access(){

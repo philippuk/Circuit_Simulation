@@ -30,7 +30,6 @@ double timestep;
 double stoptime;
 string sentence;
 int diode_count=0;
-int loop_count=0;
 
 //current statement
 set<Node*> s_of_nodes;
@@ -42,10 +41,10 @@ bool convergence(){
     bool res=true;
     for (int c=0;c<diode_list.size();c++){
         int no_of_values =diode_list[c]->guess_voltage.size();
-        if(no_of_values<3){
+        if(no_of_values<2){
             res= false;
         }else{
-            res = res&& (abs(diode_list[c]->guess_voltage[no_of_values-1]-diode_list[c]->guess_voltage[no_of_values-2])<=0.5) && (abs(diode_list[c]->guess_voltage[no_of_values-1]-diode_list[c]->guess_voltage[no_of_values-3])<=0.5);
+            res = res&& (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-1])<=0.5) && (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values])<=0.5);
         }
     }
     return res;
@@ -126,6 +125,10 @@ bool comparename(const Node* node1, const Node* node2){
         return true;
     }else if(node2->name=="0"){
         return false;
+    }else if(node1->name[0]=='P'){
+        return false;
+    }else if(node2->name[0]=='P'){
+        return true;
     }else{
         int a=stoi(node1->name.substr(1));
         int b=stoi(node2->name.substr(1));
@@ -175,13 +178,29 @@ vector<double> v_conductance_input(Component* VS){
     for(int h=0;h<node_list.size();h++){
             res.push_back(0);
     }
-    if(VS->node_positive()->name=="0"){
-        res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
-    }else if(VS->node_negative()->name=="0"){
-        res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
+    if(VS->node_positive()->name[0]=='P'||VS->node_negative()->name[0]=='P'){
+        if(VS->node_positive()->name=="0"){
+            res[stoi(VS->node_negative()->name.substr(1))-diode_count+node_list.size()]=-1;
+        }else if(VS->node_negative()->name=="0"){
+            res[stoi(VS->node_positive()->name.substr(1))-diode_count+node_list.size()]=1;
+        }else{
+            if(VS->node_positive()->name[0]=='P'){
+                res[stoi(VS->node_positive()->name.substr(1))-diode_count+node_list.size()]=1;
+                res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
+            }else{
+                res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
+                res[stoi(VS->node_negative()->name.substr(1))-diode_count+node_list.size()]=-1;
+            } 
+        }
     }else{
-        res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
-        res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
+        if(VS->node_positive()->name=="0"){
+            res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
+        }else if(VS->node_negative()->name=="0"){
+            res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
+        }else{
+            res[stoi(VS->node_positive()->name.substr(1,3))-1]=1;
+            res[stoi(VS->node_negative()->name.substr(1,3))-1]=-1;
+        }
     }
     return res;
 }
@@ -270,11 +289,15 @@ int main(int argc, char *argv[]){
             }
         }else if (sentence[0]=='D'){
             assert(words.size()==4);
-            Resistor *Rd=new Resistor("R"+words[0], 0, nodefinder(words[1]), nodefinder(words[2]));
-            Diode *d =new Diode(words[0], nodefinder(words[1]), nodefinder(words[2]),Rd);
+            string nod="P"+to_string(diode_count);
+            Resistor *rd=new Resistor("R"+words[0], 0, nodefinder(words[1]), nodefinder(nod));
+            VoltageSource *vs=new VoltageSource("V"+words[0],0,0,0,nodefinder(nod),nodefinder(words[2]));
+            Diode *d =new Diode(words[0], nodefinder(words[1]), nodefinder(words[2]),rd,vs);
             component_list_real.push_back(d);
             diode_list.push_back(d);
-            component_list_cal.push_back(Rd);
+            component_list_cal.push_back(rd);
+            component_list_cal.push_back(vs);
+            diode_count++;
         }else if(sentence[0]=='.'){
             if(words[0]==".end"){
                 cerr<<"Input finished..."<<endl;
@@ -311,7 +334,9 @@ int main(int argc, char *argv[]){
     //output headers
     cout<<"time";
     for(int i=0;i<node_list.size();i++){
-        cout<<",V("<<node_list[i]->name<<")";
+        if(node_list[i]->name[0]!='P'){
+            cout<<",V("<<node_list[i]->name<<")";
+        }
     }
     for(int i=0;i<component_list_real.size();i++){
         cout<<",I("<<component_list_real[i]->name()<<")";
@@ -332,20 +357,21 @@ int main(int argc, char *argv[]){
     }
 
     //calculation process
-    for (int i=0;timestep*i<=1e-6;i++){
+    for (int i=0;timestep*i<=stoptime;i++){
 
         //initialize three matrix
-        MatrixXd  m_conductance(node_list.size(), node_list.size());
+        MatrixXd m_conductance(node_list.size(), node_list.size());
         VectorXd m_current(node_list.size());
         VectorXd m_voltage(node_list.size());
 
         //value to input row by row
         int row=0;
 
-        //change dynamic resistance
+        //change thevenin resistance and thevenin voltage
         for(int d=0;d<diode_list.size();d++){
             cerr<<diode_list[d]->guess_voltage.back()<<endl;
-            diode_list[d]->d_resistance();
+            diode_list[d]->th_resistance();
+            diode_list[d]->th_voltage();
         }
 
         //input voltage statement
@@ -382,11 +408,7 @@ int main(int argc, char *argv[]){
         cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         for (int k=0;k<node_list.size();k++){
-             node_list[k]->voltage=m_voltage(k);
-        }
-
-        if(loop_count>4){
-            exit(1);
+            node_list[k]->voltage=m_voltage(k);
         }
 
         if(diode_count==0 ||(diode_count>0 && convergence())){
@@ -395,7 +417,9 @@ int main(int argc, char *argv[]){
             
             //Input & Output Node Voltages
             for (int k=0;k<node_list.size();k++){
-                cout<<","<<m_voltage(k);
+                if(node_list[k]->name[0]!='P'){
+                    cout<<","<<m_voltage(k);
+                }
             }
 
             for (int k=0;k<component_list_real.size();k++){
@@ -419,7 +443,6 @@ int main(int argc, char *argv[]){
                 diode_list[c]->guess_voltage.push_back(diode_list[c]->voltage());
             } 
         }else{ 
-            loop_count++;
             i--;
             for (int c=0;c<diode_list.size();c++){
                 cerr<<diode_list[c]->voltage()<<endl;
