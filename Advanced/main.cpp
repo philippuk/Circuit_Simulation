@@ -47,9 +47,6 @@ bool convergence(){
         if(no_of_values<2){
             res= false;
         }else{
-            cerr<<abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-1])<<endl;
-            cerr<<abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-2])<<endl;
-
             res = res&& (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-1])<=0.005) && (abs(diode_list[c]->voltage()-diode_list[c]->guess_voltage[no_of_values-2])<=0.005);
         }
     }
@@ -403,7 +400,7 @@ int main(int argc, char *argv[]){
     }
 
     //calculation process
-    for (int i=0;timestep*i<=stoptime;i++){
+    for (int i=0;timestep*i<=1e-6;i++){
 
         //initialize three matrix
         MatrixXd m_conductance(node_list.size(), node_list.size());
@@ -453,10 +450,10 @@ int main(int argc, char *argv[]){
         }
 
         //calculation for the voltage matrix
-        //cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
-        //cerr << "Here is the current vector:\n" << m_current << endl;
+        cerr << "Here is the conductance matrix:\n" << m_conductance << endl;
+        cerr << "Here is the current vector:\n" << m_current << endl;
         m_voltage = m_conductance.colPivHouseholderQr().solve(m_current);
-        //cerr << "The voltage vector is:\n" << m_voltage << endl;
+        cerr << "The voltage vector is:\n" << m_voltage << endl;
 
         for (int k=0;k<node_list.size();k++){
             node_list[k]->voltage=m_voltage(k);
@@ -469,6 +466,7 @@ int main(int argc, char *argv[]){
 
         if(diode_count==0 ||(diode_count>0 && convergence())){
             
+            cerr<<"Successful Guess..."<<endl;
             cout<<i*timestep;
             
             //Input & Output Node Voltages

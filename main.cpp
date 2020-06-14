@@ -60,26 +60,28 @@ Node* nodefinder(string a){
 }
 
 double s_value(string s){
-    int end_dig_pos;
+    int m_pos;
     double value;
     double num;
+    string no;
     string multiplier;
 
     if(isalpha(s.back())){
 
         for(int i=0;i<s.size();i++){
             if (s[i]=='.'){
-                continue;
+                no.push_back(s[i]);
             }else if(isalpha(s[i])){
-                end_dig_pos=i;
+                m_pos=i;
                 break;
-            } 
-        }   
+            }else{
+                no.push_back(s[i]);
+            }
+        }
 
-        cerr<<s.substr(0,end_dig_pos)<<endl;
-        num=stod(s.substr(0,end_dig_pos));
-        multiplier=s.substr(end_dig_pos);
-        
+        num=stod(no);
+        multiplier=s.substr(m_pos);
+
         if(multiplier=="k"){
             value = num*1000;
         }else if(multiplier=="Meg"){
