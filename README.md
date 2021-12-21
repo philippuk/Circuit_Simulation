@@ -1,19 +1,19 @@
 # Circuit_Simulation
 
-# Advanced
+## Advanced
 Dervied from the basic program to run non linear components.
 
-# Component
+## Component
 Include all the Definition for components
 
-# TestCircuit
+## TestCircuit
 Include test circuit and result of the test circuit
 
-# Eigen
+## Eigen
 Library used to solve linear algebra
 
 Run compile_main.sh to get the executable file
 
-# License & copyright
+## License & copyright
 
 Licensed under the [MIT License](LICENSE).
